@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+
+  --color-montis-navy: #1A2B56;
+  --color-montis-blue: #00AEEF;
+  --color-montis-red: #ED1C24;
+  --color-montis-ink: #213033;
+  --color-montis-cream: #f4f1ec;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-marquee-up: marquee-up 40s linear infinite;
+  --animate-marquee-down: marquee-down 40s linear infinite;
+  --animate-scroll-arrow: scroll-arrow 2.4s ease-in-out infinite;
+  --animate-arrow-loop: arrow-loop 1.4s ease-in-out infinite;
+  --animate-line-draw: line-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes marquee-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+@keyframes marquee-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes scroll-arrow {
+  0% { transform: translateY(-8px); opacity: 0; }
+  30%, 70% { opacity: 1; }
+  100% { transform: translateY(14px); opacity: 0; }
+}
+
+@keyframes arrow-loop {
+  0% { transform: translateX(0); opacity: 1; }
+  45% { transform: translateX(16px); opacity: 0; }
+  46% { transform: translateX(-16px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes line-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body {
+    @apply bg-montis-cream text-montis-ink antialiased overflow-x-hidden;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-montis-navy);
+    color: #fff;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* All-caps wide-tracked micro-label, as in baikal430 (.all-caps) */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .eyebrow-s {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  /* AnimatedLine – thin underline that draws in from left to right */
+  .animated-line {
+    display: block;
+    height: 1px;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(0);
+    background: currentColor;
+    opacity: 0.35;
+  }
+  .animated-line.in-view {
+    animation: line-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Infinite vertical marquee track */
+  .marquee-track-up {
+    animation: marquee-up 38s linear infinite;
+    will-change: transform;
+  }
+  .marquee-track-down {
+    animation: marquee-down 48s linear infinite;
+    will-change: transform;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { scrollbar-width: none; }
+
+  /* Hide header by sliding it off-screen */
+  .header-hidden { transform: translateY(-110%); }
+
+  /* Parallax inner wrapper helpers */
+  .parallax-inner {
+    width: 100%;
+    height: 100%;
+    transform: scale(1.08);
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .parallax-root:hover .parallax-inner { transform: scale(1.14) translateY(-2%); }
+}
+
+@media (max-width: 640px) {
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
+
+  .eyebrow-s {
+    font-size: 9px;
+    letter-spacing: 0.24em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .marquee-track-up,
+  .marquee-track-down,
+  .animated-line.in-view,
+  .header-hidden,
+  .parallax-inner {
+    animation: none !important;
+    transform: none !important;
+  }
+}
