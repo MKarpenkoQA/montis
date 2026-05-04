@@ -102,7 +102,7 @@ const translations = {
     cta: { eyebrow: "✦ Поддержать баланс", title: "Почувствуйте\nэнергию гор", button: "Заказать доставку" },
     footer: {
       desc: "Новый стандарт природной воды. Мы заботимся о вашем здоровье, предоставляя продукт высочайшего качества.",
-      contacts: "Контакты", nav: "Навигация", brand: "О бренде", rights: "Все права защищены.",
+      contacts: "Контакты", nav: "Навигация", brand: "Где купить", rights: "Все права защищены.",
       privacy: "Политика конфиденциальности", terms: "Условия использования",
     },
   },
@@ -438,7 +438,7 @@ const Header = ({
         </a>
 
         <nav className="hidden md:flex items-center gap-10">
-          <a href="#source" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
+          <a href="#video" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
             {t.nav.source}
           </a>
           <a href="#composition" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
@@ -491,7 +491,7 @@ const Header = ({
           </div>
 
           <a
-            href="#distributors"
+            href="#contact"
             className="group relative inline-flex min-h-[44px] items-center gap-2 sm:gap-3 pl-4 sm:pl-5 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-montis-navy text-white rounded-full overflow-hidden"
           >
             <span className="eyebrow-s relative z-10 truncate max-w-[30vw] sm:max-w-none">{t.buy}</span>
@@ -1032,7 +1032,7 @@ const Formats = ({ t }: { t: typeof translations["en"] }) => (
         {t.formats.cards.map((card, i) => (
           <motion.a
             key={card.volume}
-            href="#distributors"
+            href="#contact"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10% 0px" }}
@@ -1196,7 +1196,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
 
     <div className="container mx-auto px-4 sm:px-6 md:px-12 mt-12 md:mt-14 flex flex-wrap gap-3 sm:gap-4">
       <a
-        href="#"
+        href="#contact"
         className="group inline-flex min-h-[44px] items-center gap-3 pl-5 sm:pl-6 pr-4 sm:pr-5 py-3 sm:py-4 bg-montis-navy text-white rounded-full relative overflow-hidden"
       >
         <span className="eyebrow-s relative z-10">{t.distributors.online}</span>
@@ -1204,7 +1204,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
         <span className="absolute inset-0 bg-montis-blue translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
       </a>
       <a
-        href="#"
+        href="#contact"
         className="group inline-flex min-h-[44px] items-center gap-3 pl-5 sm:pl-6 pr-4 sm:pr-5 py-3 sm:py-4 border border-montis-navy text-montis-navy rounded-full relative overflow-hidden"
       >
         <span className="eyebrow-s relative z-10 transition-colors group-hover:text-white">{t.distributors.offline}</span>
@@ -1223,7 +1223,7 @@ const CTA = ({ t }: { t: typeof translations["en"] }) => (
   <section className="relative py-28 md:py-36 bg-montis-blue overflow-hidden">
     <div className="absolute inset-0 opacity-25">
       <img
-        src="/media/reflective-lake.jpg"
+        src="/media/back.png"
         alt=""
         className="w-full h-full object-cover"
         referrerPolicy="no-referrer"
@@ -1237,7 +1237,7 @@ const CTA = ({ t }: { t: typeof translations["en"] }) => (
         text={t.cta.title}
       />
       <a
-        href="#"
+        href="#contact"
         className="group inline-flex min-h-[44px] items-center gap-3 sm:gap-4 pl-6 sm:pl-8 pr-5 sm:pr-6 py-3.5 sm:py-5 bg-white text-montis-navy rounded-full relative overflow-hidden"
       >
         <span className="eyebrow relative z-10 transition-colors duration-500 group-hover:text-white text-[10px] sm:text-[11px]">
@@ -1283,7 +1283,7 @@ const Footer = ({ t }: { t: typeof translations["en"] }) => (
         <div className="md:col-span-4">
           <div className="eyebrow text-montis-ink/60 mb-6">{t.footer.nav}</div>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-montis-navy">
-            <li><a href="#source" className="hover:text-montis-blue transition-colors">{t.nav.source}</a></li>
+            <li><a href="#video" className="hover:text-montis-blue transition-colors">{t.nav.source}</a></li>
             <li><a href="#composition" className="hover:text-montis-blue transition-colors">{t.nav.composition}</a></li>
             <li><a href="#purification" className="hover:text-montis-blue transition-colors">{t.nav.purification}</a></li>
             <li><a href="#gallery" className="hover:text-montis-blue transition-colors">{t.nav.gallery}</a></li>
