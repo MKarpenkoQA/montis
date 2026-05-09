@@ -531,6 +531,9 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
           src="/media/mountain-lake-hero.jpg"
           alt="Mountain lake"
           className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+          decoding="sync"
           referrerPolicy="no-referrer"
         />
         <motion.div
@@ -588,7 +591,9 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
 const SecondScreenVideo = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const videoSrc = `${import.meta.env.BASE_URL}media/Meshy_AI_video.mp4`;
+  const mobileImageSrc = `${import.meta.env.BASE_URL}media/black.png`;
   const posterSrc = `${import.meta.env.BASE_URL}media/mountain-lake-hero.jpg`;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["center center", "end center"] });
   const videoStartThreshold = 0.22; // ~half-screen scroll before playback begins
@@ -599,6 +604,20 @@ const SecondScreenVideo = () => {
   const depthBlockOpacity = useTransform(scrollYProgress, [0.16, 0.34], [0, 1]);
   const compositionBlockY = useTransform(scrollYProgress, [0.46, 0.68], [120, 0]);
   const compositionBlockOpacity = useTransform(scrollYProgress, [0.46, 0.62], [0, 1]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const handleChange = () => setIsMobile(mediaQuery.matches);
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    // Force the browser to begin buffering immediately after mount.
+    if (isMobile) return;
+    videoRef.current?.load();
+  }, [isMobile]);
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on("change", (v) => {
@@ -615,60 +634,75 @@ const SecondScreenVideo = () => {
     <section ref={sectionRef} id="video" className="relative h-[320svh] w-full bg-black">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
-          className="section-motion-layer absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url("${posterSrc}")` }}
+          className={`section-motion-layer absolute inset-0 bg-cover bg-center ${isMobile ? "bg-black" : ""}`}
+          style={{ backgroundImage: isMobile ? "none" : `url("${posterSrc}")` }}
           aria-hidden="true"
         >
-          <motion.video
-            ref={videoRef}
-            className="absolute inset-0 z-0 h-full w-full object-cover"
-            muted
-            playsInline
-            preload="metadata"
-            poster={posterSrc}
-            disablePictureInPicture
-            aria-hidden
-            onLoadedMetadata={() => {
-              const video = videoRef.current;
-              if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
-              const clamped = Math.max(0, Math.min(1, scrollYProgress.get()));
-              const delayedProgress = Math.max(0, (clamped - videoStartThreshold) / (1 - videoStartThreshold));
-              video.currentTime = delayedProgress * video.duration;
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </motion.video>
-          <div className="absolute -right-[10%] md:-right-[20%] top-[-10%] z-10 h-[70%] md:h-[85%] w-[60%] md:w-[55%] rounded-full bg-gradient-to-bl from-montis-blue/[0.07] via-transparent to-transparent blur-3xl"></div>
-          <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_80%_50%_at_70%_0%,rgba(26,43,86,0.06),transparent)]"></div>
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-black/30"></div>
-          <motion.div className="absolute inset-0 z-20 bg-black" style={{ opacity: introBlackOpacity }} />
-          <motion.div
-            className="absolute inset-0 z-25 flex items-center justify-center px-6 text-center"
-            style={{ opacity: introBlackOpacity }}
-          >
-            <p className="font-serif text-3xl md:text-5xl leading-tight text-white max-w-4xl">
-              Вода добывается из подземного источника
-            </p>
-          </motion.div>
-          <motion.div
-            className="absolute left-1/2 -translate-x-1/2 bottom-8 z-30 flex flex-col items-center gap-2 text-white/80"
-            style={{ opacity: introBlackOpacity }}
-          >
-            <span className="eyebrow-s">scroll down</span>
-            <div className="relative h-10 w-[21px] overflow-hidden">
-              <ArrowGlyph
-                className="absolute left-0 top-0 rotate-90"
-                style={{ animation: "scroll-arrow 2.2s ease-in-out infinite" }}
-              />
-            </div>
-          </motion.div>
+          {isMobile ? (
+            <img
+              src={mobileImageSrc}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 z-0 h-full w-full object-contain scale-[0.78]"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <motion.video
+              ref={videoRef}
+              className="absolute inset-0 z-0 h-full w-full object-cover"
+              muted
+              playsInline
+              preload="auto"
+              poster={posterSrc}
+              disablePictureInPicture
+              aria-hidden
+              onLoadedMetadata={() => {
+                const video = videoRef.current;
+                if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+                const clamped = Math.max(0, Math.min(1, scrollYProgress.get()));
+                const delayedProgress = Math.max(0, (clamped - videoStartThreshold) / (1 - videoStartThreshold));
+                video.currentTime = delayedProgress * video.duration;
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </motion.video>
+          )}
+          {!isMobile && <div className="absolute -right-[10%] md:-right-[20%] top-[-10%] z-10 h-[70%] md:h-[85%] w-[60%] md:w-[55%] rounded-full bg-gradient-to-bl from-montis-blue/[0.07] via-transparent to-transparent blur-3xl"></div>}
+          {!isMobile && <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_80%_50%_at_70%_0%,rgba(26,43,86,0.06),transparent)]"></div>}
+          {!isMobile && <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/40 via-transparent to-black/30"></div>}
+          {!isMobile && <motion.div className="absolute inset-0 z-20 bg-black" style={{ opacity: introBlackOpacity }} />}
+          {!isMobile && (
+            <motion.div
+              className="absolute inset-0 z-25 flex items-center justify-center px-6 text-center"
+              style={{ opacity: introBlackOpacity }}
+            >
+              <p className="font-serif text-3xl md:text-5xl leading-tight text-white max-w-4xl">
+                Вода добывается из подземного источника
+              </p>
+            </motion.div>
+          )}
+          {!isMobile && (
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 bottom-8 z-30 flex flex-col items-center gap-2 text-white/80"
+              style={{ opacity: introBlackOpacity }}
+            >
+              <span className="eyebrow-s">scroll down</span>
+              <div className="relative h-10 w-[21px] overflow-hidden">
+                <ArrowGlyph
+                  className="absolute left-0 top-0 rotate-90"
+                  style={{ animation: "scroll-arrow 2.2s ease-in-out infinite" }}
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
         <div className="absolute inset-0 z-30 flex items-end justify-start px-4 sm:px-6 md:px-12 pb-8 sm:pb-10 md:pb-16 pointer-events-none">
           <motion.div
-            className="md:col-span-7 md:pl-6 w-full max-w-xl"
+            className="hidden md:block md:col-span-7 md:pl-6 w-full max-w-xl"
             style={{ y: compositionBlockY, opacity: compositionBlockOpacity }}
           >
             <p className="eyebrow text-white/80 mb-3">Основной состав, мг/л</p>
@@ -731,13 +765,13 @@ const SecondScreenVideo = () => {
           </motion.div>
         </div>
 
-        <div className="absolute inset-0 z-40 flex items-end px-4 sm:px-6 md:px-12 pb-8 sm:pb-10 md:pb-14 pointer-events-none">
-          <div className="SequenceContent_rootWrapper__zwUHM SequenceContent_rootWrapper_InColumn__uvVk7 relative text-white w-full flex flex-col md:flex-row md:items-end md:justify-between gap-6 sm:gap-8 md:gap-12">
+        <div className="absolute inset-0 z-40 flex items-start md:items-end px-4 sm:px-6 md:px-12 pt-16 sm:pt-20 md:pt-0 pb-8 sm:pb-10 md:pb-14 pointer-events-none">
+          <div className="SequenceContent_rootWrapper__zwUHM SequenceContent_rootWrapper_InColumn__uvVk7 relative text-white w-full h-full flex flex-col md:flex-row md:items-end md:justify-between gap-6 sm:gap-8 md:gap-12">
             <motion.div
-              className="TextInfographic_root__HlMeP SequenceContent_rootTextBlock__tg_D2 relative z-10 mb-2 sm:mb-8 md:mb-56 md:self-start flex flex-col items-start max-w-[80vw] sm:max-w-none"
-              style={{ y: textBlockY, opacity: textBlockOpacity }}
+              className="TextInfographic_root__HlMeP SequenceContent_rootTextBlock__tg_D2 relative z-10 self-start mt-1 sm:mt-3 md:mt-0 mb-2 sm:mb-8 md:mb-56 md:self-start flex flex-col items-center sm:items-start text-center sm:text-left max-w-[80vw] sm:max-w-none mx-auto md:mx-0"
+              style={isMobile ? { y: 0, opacity: 1 } : { y: textBlockY, opacity: textBlockOpacity }}
             >
-              <h2 className="TextInfographic_rootTitle__AHwO3 h-auto font-serif text-2xl sm:text-4xl md:text-6xl leading-[0.95] tracking-tight">
+              <h2 className="TextInfographic_rootTitle__AHwO3 h-auto w-full font-serif text-[11vw] sm:text-4xl md:text-6xl leading-[0.95] tracking-tight">
                 Сила, добытая <br />
                 с глубины
               </h2>
@@ -746,56 +780,46 @@ const SecondScreenVideo = () => {
               </p>
             </motion.div>
             <motion.div
-              className="DepthRange_root__HDQRC SequenceContent_rootDepthRange__UkmXB md:absolute md:right-0 md:bottom-0 text-right max-w-[70vw] sm:max-w-sm ml-auto"
+              className="DepthRange_root__HDQRC SequenceContent_rootDepthRange__UkmXB relative mt-auto md:mt-0 md:absolute md:right-0 md:bottom-0 text-left md:text-right max-w-[70vw] sm:max-w-sm ml-0 md:ml-auto pb-56"
               style={{ y: depthBlockY, opacity: depthBlockOpacity }}
             >
-              <div className="DepthRange_rootTextContent__IgMuX">
-                <p className="all-caps eyebrow text-white/80">
-                  Точка забора<br />
-                  воды находится<br />
-                  на глубине
-                </p>
-                <div className="DepthRange_rootValue__7H6TY mt-5">
-                  <span className="DepthRange_rootValueNumber__4OkQW flex items-end justify-end gap-3 font-serif text-6xl md:text-8xl leading-none">
-                    <span className="h-1">430</span>
-                    <ArrowGlyph className="mb-2 md:mb-3" />
-                  </span>
-                  <span className="all-caps eyebrow text-white/80 mt-2 inline-block">метров</span>
+              <div className="flex w-full items-end justify-start gap-4">
+                <div className="DepthRange_rootTextContent__IgMuX absolute left-0 bottom-12">
+                  <p className="all-caps eyebrow text-white/80">
+                    Точка забора<br />
+                    воды находится<br />
+                    на глубине
+                  </p>
+                  <div className="DepthRange_rootValue__7H6TY mt-5">
+                    <span className="DepthRange_rootValueNumber__4OkQW flex items-end justify-start md:justify-end gap-3 font-serif text-6xl md:text-8xl leading-none">
+                      <span className="h-1">430</span>
+                      <ArrowGlyph className="mb-2 md:mb-3" />
+                    </span>
+                    <span className="all-caps eyebrow text-white/80 mt-2 inline-block">метров</span>
+                  </div>
                 </div>
-              </div>
-              <picture>
-                <img
-                  alt=""
-                  loading="lazy"
-                  width="80"
-                  height="90"
-                  decoding="async"
-                  className="DepthRange_rootImage__SgzNl mt-6 ml-auto opacity-90"
-                  src="https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/depthRangeImg.svg"
-                  style={{ color: "transparent" }}
-                />
-              </picture>
-              <div className="DepthRange_rootRanges__Vh2Se mt-5 flex items-end justify-end gap-5">
-                <div className="DepthRange_rootRangesValues__KB2cG flex flex-col gap-2">
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">85</span>
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">170</span>
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">250</span>
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">340</span>
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">400</span>
-                  <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white">430</span>
+                <div className="DepthRange_rootRanges__Vh2Se absolute right-0 bottom-0 mt-0 ml-0 translate-x-20 sm:translate-x-0 md:translate-x-0 flex items-end justify-end gap-5">
+                  <div className="DepthRange_rootRangesValues__KB2cG flex flex-col gap-2">
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">85</span>
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">170</span>
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">250</span>
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">340</span>
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">400</span>
+                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white">430</span>
+                  </div>
+                  <picture>
+                    <img
+                      alt=""
+                      loading="lazy"
+                      width="10"
+                      height="203"
+                      decoding="async"
+                      className="DepthRange_rootRangesImage__diGfb opacity-90"
+                      src="https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/ranges.svg"
+                      style={{ color: "transparent" }}
+                    />
+                  </picture>
                 </div>
-                <picture>
-                  <img
-                    alt=""
-                    loading="lazy"
-                    width="10"
-                    height="203"
-                    decoding="async"
-                    className="DepthRange_rootRangesImage__diGfb opacity-90"
-                    src="https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/ranges.svg"
-                    style={{ color: "transparent" }}
-                  />
-                </picture>
               </div>
             </motion.div>
           </div>
@@ -832,7 +856,7 @@ const SectionSequence = ({ t }: { t: typeof translations["en"] }) => {
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={sourcePoster}
             aria-hidden
           >
@@ -967,6 +991,8 @@ const Purification = ({ t }: { t: typeof translations["en"] }) => {
                   src={stepBackgrounds[i] ?? "/media/mountain-lake-hero.jpg"}
                   alt=""
                   aria-hidden
+                  loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : "auto"}
                   className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-montis-navy/55" />
