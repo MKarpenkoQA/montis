@@ -13,9 +13,10 @@ type MediaHint = {
 const MEDIA_HINTS: MediaHint[] = [
   // Critical, visible in first viewport.
   { href: "/media/mountain-lake-hero.jpg", rel: "preload", as: "image", fetchPriority: "high" },
-  { href: "/media/Meshy_AI_video.mp4", rel: "preload", as: "video", type: "video/mp4" },
+  { href: "/media/montis-hero.mp4", rel: "preload", as: "video", type: "video/mp4" },
   // Below-the-fold image and interaction assets.
-  { href: "/media/mountain-valley.jpg", rel: "prefetch", as: "image" },
+  { href: "/media/montis-bottle-poster.jpg", rel: "prefetch", as: "image" },
+  { href: "/media/montis-bottle.mp4", rel: "prefetch", as: "video", type: "video/mp4" },
   { href: "/media/mountain-stream.jpg", rel: "prefetch", as: "image" },
   { href: "/media/alpine-vista.jpg", rel: "prefetch", as: "image" },
   { href: "/media/reflective-lake.jpg", rel: "prefetch", as: "image" },

@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Playfair Display", serif;
+  --font-sans: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Golos Text", ui-sans-serif, system-ui, sans-serif;
 
   --color-montis-navy: #1A2B56;
   --color-montis-blue: #00AEEF;
@@ -68,6 +68,8 @@
 
   body {
     @apply bg-montis-cream text-montis-ink antialiased overflow-x-hidden;
+    font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    font-optical-sizing: auto;
     font-feature-settings: "ss01", "cv11";
   }
 
@@ -138,6 +140,35 @@
     transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .parallax-root:hover .parallax-inner { transform: scale(1.14) translateY(-2%); }
+
+  .flip-card-root {
+    perspective: 1200px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .flip-card-inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+  .flip-card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
 }
 
 @media (max-width: 640px) {

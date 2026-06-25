@@ -20,14 +20,25 @@ import {
   MapPin,
   ChevronDown,
   Globe,
+  Mountain,
+  Droplets,
+  ShieldCheck,
+  Sparkles,
+  Filter,
+  Sun,
+  Wind,
+  Layers,
 } from "lucide-react";
 import {
   useRef,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
   type CSSProperties,
 } from "react";
+import { MontisLogo, MontisLogoLink } from "./components/MontisLogo";
+import { FlipCard } from "./components/FlipCard";
 
 type Language = "ru" | "uz" | "en";
 
@@ -37,21 +48,28 @@ type Language = "ru" | "uz" | "en";
 
 const translations = {
   ru: {
-    nav: { source: "Источник", composition: "Состав", purification: "Очистка", gallery: "Галерея", contact: "Связаться" },
+    nav: { source: "Источник", composition: "Состав", purification: "Очистка", contact: "Связаться" },
     buy: "Где купить",
     hero: {
       eyebrow: "✦ Реликтовая вода",
       title: "Вода,\nсозданная\nприродой",
       subtitle: "100% источник природной энергии из самого сердца гор",
-      scroll: "Листайте вниз",
     },
     source: {
       eyebrow: "✦ Уникальность",
       title: "Сила, добытая\nс глубины",
       text: "Мы берём воду там, где ничто не влияет на её состав — из защищённого артезианского горизонта под толщей горных пород.",
+      introLine: "Вода добывается из подземного источника",
       depthLabel: "Точка забора воды\nнаходится на глубине",
       depthUnit: "метров",
-      scale: [50, 90, 130, 170, 195, 210],
+      depthMax: 430,
+      depthScale: [0, 85, 170, 250, 340, 400, 430],
+      advantages: [
+        { title: "Артезианский источник", text: "Вода добывается с глубины 430 м из защищённого горизонта." },
+        { title: "Ультралёгкая минерализация", text: "До 0,2 г/л — идеальна для ежедневного употребления." },
+        { title: "Природный баланс", text: "Оптимальное содержание микроэлементов без искусственных добавок." },
+        { title: "4 ступени очистки", text: "Современные технологии сохраняют природные свойства воды." },
+      ],
     },
     composition: {
       eyebrow: "✦ Минеральный состав",
@@ -85,21 +103,22 @@ const translations = {
       eyebrow: "✦ Форматы",
       title: "Удобство в\nкаждом формате",
       text: "MONTIS представлена в различных объемах, чтобы вода, которой вы доверяете, всегда была рядом.",
+      stillLabel: "Негазированная",
       cards: [
-        { volume: "0,5 л", desc: "Идеально\nна каждый день", image: "/media/0,5.png" },
-        { volume: "1 л", desc: "Баланс\nпользы и объема", image: "/media/1l.png" },
-        { volume: "1,5 л", desc: "Легко утоляет\nжажду", image: "/media/1.5l.png" },
+        { volume: "0,5 л", desc: "Идеально\nна каждый день", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Газированная" },
+        { volume: "1 л", desc: "Баланс\nпользы и объема", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Газированная" },
+        { volume: "1,5 л", desc: "Легко утоляет\nжажду", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Газированная" },
       ],
     },
-    gallery: { eyebrow: "✦ Галерея" },
     distributors: {
       eyebrow: "✦ Где купить",
       title: "MONTIS рядом\nс вами",
       text: "Вы найдёте MONTIS в супермаркетах, ресторанах и кофейнях по всей стране, а также на популярных площадках доставки.",
-      online: "Купить онлайн",
       offline: "Найти магазин",
+      mapTitle: "Точки продаж",
+      mapLink: "Открыть карту",
     },
-    cta: { eyebrow: "✦ Поддержать баланс", title: "Почувствуйте\nэнергию гор", button: "Заказать доставку" },
+    cta: { eyebrow: "✦ Поддержать баланс", title: "Почувствуйте\nэнергию гор", button: "Сотрудничать с нами" },
     footer: {
       desc: "Новый стандарт природной воды. Мы заботимся о вашем здоровье, предоставляя продукт высочайшего качества.",
       contacts: "Контакты", nav: "Навигация", brand: "Где купить", rights: "Все права защищены.",
@@ -107,16 +126,24 @@ const translations = {
     },
   },
   uz: {
-    nav: { source: "Manba", composition: "Tarkib", purification: "Tozalash", gallery: "Galereya", contact: "Bog'lanish" },
+    nav: { source: "Manba", composition: "Tarkib", purification: "Tozalash", contact: "Bog'lanish" },
     buy: "Qayerdan sotib olish",
-    hero: { eyebrow: "✦ Relikt suv", title: "Tabiat tomonidan\nyaratilgan suv", subtitle: "Tog'lar qalbidagi tabiiy energiya manbai", scroll: "Pastga suring" },
+    hero: { eyebrow: "✦ Relikt suv", title: "Tabiat tomonidan\nyaratilgan suv", subtitle: "Tog'lar qalbidagi tabiiy energiya manbai" },
     source: {
       eyebrow: "✦ Noyoblik",
       title: "Chuqurlikdan\nolingan kuch",
       text: "Biz suvni uning tarkibiga hech narsa ta'sir qilmaydigan joyda — himoyalangan artezian gorizontidan olamiz.",
+      introLine: "Suv yer osti manbasidan olinadi",
       depthLabel: "Suv olish nuqtasi\nchuqurlikda joylashgan",
       depthUnit: "metr",
-      scale: [50, 90, 130, 170, 195, 210],
+      depthMax: 430,
+      depthScale: [0, 85, 170, 250, 340, 400, 430],
+      advantages: [
+        { title: "Artezian manba", text: "Suv 430 m chuqurlikdan himoyalangan gorizontdan olinadi." },
+        { title: "Ultra-yengil minerallashuv", text: "0,2 g/l gacha — kundalik iste'mol uchun ideal." },
+        { title: "Tabiiy muvozanat", text: "Mikroelementlarning optimal tarkibi." },
+        { title: "4 bosqichli tozalash", text: "Zamonaviy texnologiyalar tabiiy xossalarni saqlaydi." },
+      ],
     },
     composition: {
       eyebrow: "✦ Mineral tarkib",
@@ -150,19 +177,20 @@ const translations = {
       eyebrow: "✦ Formatlar",
       title: "Har bir\nformatda qulaylik",
       text: "MONTIS turli hajmlarda taqdim etiladi, shunda ishonchli suvingiz har doim yoningizda bo'ladi.",
+      stillLabel: "Gazsiz",
       cards: [
-        { volume: "0,5 l", desc: "Har kun uchun\nideal", image: "/media/0,5.png" },
-        { volume: "1 l", desc: "Foyda va\nhajm muvozanati", image: "/media/1l.png" },
-        { volume: "1,5 l", desc: "Chanqoqni\nyengil qondiradi", image: "/media/1.5l.png" },
+        { volume: "0,5 l", desc: "Har kun uchun\nideal", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Gazlangan" },
+        { volume: "1 l", desc: "Foyda va\nhajm muvozanati", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Gazlangan" },
+        { volume: "1,5 l", desc: "Chanqoqni\nyengil qondiradi", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Gazlangan" },
       ],
     },
-    gallery: { eyebrow: "✦ Galereya" },
     distributors: {
       eyebrow: "✦ Qayerdan topish mumkin",
       title: "MONTIS\nyoningizda",
       text: "MONTIS-ni supermarketlar, restoranlar va kafelarda, shuningdek mashhur yetkazib berish platformalarida topasiz.",
-      online: "Onlayn sotib olish",
       offline: "Do'kon topish",
+      mapTitle: "Sotuv nuqtalari",
+      mapLink: "Xaritani ochish",
     },
     cta: { eyebrow: "✦ Muvozanatni saqlash", title: "Tog'lar\nenergiyasini his eting", button: "Yetkazib berishga buyurtma" },
     footer: {
@@ -172,16 +200,24 @@ const translations = {
     },
   },
   en: {
-    nav: { source: "Source", composition: "Composition", purification: "Purification", gallery: "Gallery", contact: "Contact" },
+    nav: { source: "Source", composition: "Composition", purification: "Purification", contact: "Contact" },
     buy: "Where to buy",
-    hero: { eyebrow: "✦ Relict water", title: "Water shaped\nby nature", subtitle: "100% source of natural energy from the heart of the mountains", scroll: "Scroll to explore" },
+    hero: { eyebrow: "✦ Relict water", title: "Water shaped\nby nature", subtitle: "100% source of natural energy from the heart of the mountains" },
     source: {
       eyebrow: "✦ Uniqueness",
       title: "Strength\nfrom the depths",
       text: "We draw water where nothing can touch its composition — from a protected artesian horizon deep beneath the mountain rock.",
+      introLine: "Water is drawn from an underground source",
       depthLabel: "The intake point\nsits at a depth of",
       depthUnit: "meters",
-      scale: [50, 90, 130, 170, 195, 210],
+      depthMax: 430,
+      depthScale: [0, 85, 170, 250, 340, 400, 430],
+      advantages: [
+        { title: "Artesian source", text: "Water is drawn from 430 m deep in a protected horizon." },
+        { title: "Ultra-light mineralization", text: "Up to 0.2 g/L — ideal for daily drinking." },
+        { title: "Natural balance", text: "Optimal trace elements with no artificial additives." },
+        { title: "4-stage purification", text: "Modern technology preserves the water's natural properties." },
+      ],
     },
     composition: {
       eyebrow: "✦ Mineral composition",
@@ -215,19 +251,20 @@ const translations = {
       eyebrow: "✦ Formats",
       title: "Convenience in\nevery size",
       text: "MONTIS comes in different bottle sizes, so the water you trust is always with you.",
+      stillLabel: "Still",
       cards: [
-        { volume: "0.5 L", desc: "Perfect\nfor every day", image: "/media/0,5.png" },
-        { volume: "1 L", desc: "Balanced\nvolume and benefit", image: "/media/1l.png" },
-        { volume: "1.5 L", desc: "Easily\nquenches thirst", image: "/media/1.5l.png" },
+        { volume: "0.5 L", desc: "Perfect\nfor every day", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Sparkling" },
+        { volume: "1 L", desc: "Balanced\nvolume and benefit", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Sparkling" },
+        { volume: "1.5 L", desc: "Easily\nquenches thirst", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Sparkling" },
       ],
     },
-    gallery: { eyebrow: "✦ Gallery" },
     distributors: {
       eyebrow: "✦ Where to buy",
       title: "MONTIS close\nto you",
       text: "Find MONTIS in supermarkets, restaurants and cafés across the country, as well as on popular delivery platforms.",
-      online: "Buy online",
       offline: "Find a store",
+      mapTitle: "Store locations",
+      mapLink: "Open map",
     },
     cta: { eyebrow: "✦ Stay balanced", title: "Feel the energy\nof pure mountains", button: "Order delivery" },
     footer: {
@@ -339,7 +376,7 @@ const Preloader = ({ onDone }: { onDone: () => void }) => {
     return () => controls.stop();
   }, [mv, onDone]);
 
-  const maskInset = useTransform(mv, [0, 100], [100, 0]);
+  const maskInset = useTransform(mv, [0, 100], [0, 100]);
 
   return (
     <motion.div
@@ -349,39 +386,14 @@ const Preloader = ({ onDone }: { onDone: () => void }) => {
       transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
     >
       <div className="flex-1 flex items-center justify-center">
-        <div className="relative w-[220px] h-[260px] text-montis-navy">
-          {/* Outline shape */}
-          <svg viewBox="0 0 220 260" className="absolute inset-0 w-full h-full" aria-hidden>
-            <path
-              d="M110 10 C 150 60, 200 110, 200 170 C 200 220, 160 250, 110 250 C 60 250, 20 220, 20 170 C 20 110, 70 60, 110 10 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeOpacity="0.25"
-              strokeWidth="1"
-              strokeDasharray="2 2"
-            />
-          </svg>
-          {/* Progressively revealed fill */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ clipPath: useTransform(maskInset, (v) => `inset(${v}% 0% 0% 0%)`) }}
-          >
-            <svg viewBox="0 0 220 260" className="w-full h-full" aria-hidden>
-              <path
-                d="M110 10 C 150 60, 200 110, 200 170 C 200 220, 160 250, 110 250 C 60 250, 20 220, 20 170 C 20 110, 70 60, 110 10 Z"
-                fill="currentColor"
-              />
-            </svg>
-          </motion.div>
-        </div>
+        <MontisLogo iconSize={88} fillProgress={maskInset} />
       </div>
 
-      <div className="w-full flex items-end justify-between">
+      <div className="w-full flex items-end">
         <span className="font-serif text-6xl md:text-8xl text-montis-navy leading-none tabular-nums">
           {display}
           <span className="text-montis-navy/40">%</span>
         </span>
-        <span className="font-serif text-3xl md:text-4xl tracking-tighter text-montis-navy">MONTIS</span>
       </div>
     </motion.div>
   );
@@ -433,9 +445,7 @@ const Header = ({
       }`}
     >
       <div className="flex items-center justify-between gap-3 px-4 sm:px-6 md:px-12 py-3 sm:py-4 md:py-5 backdrop-blur-md bg-montis-cream/70 border-b border-montis-ink/10">
-        <a href="#top" className="shrink-0 font-serif text-xl sm:text-2xl md:text-[28px] tracking-tighter text-montis-navy">
-          MONTIS
-        </a>
+        <MontisLogoLink iconSize={36} variant="full" className="max-w-[140px] sm:max-w-[160px] md:max-w-none" />
 
         <nav className="hidden md:flex items-center gap-10">
           <a href="#video" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
@@ -446,9 +456,6 @@ const Header = ({
           </a>
           <a href="#purification" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
             {t.nav.purification}
-          </a>
-          <a href="#gallery" className="eyebrow text-montis-ink/80 hover:text-montis-navy transition-colors">
-            {t.nav.gallery}
           </a>
         </nav>
 
@@ -515,10 +522,24 @@ const Header = ({
 
 const Hero = ({ t }: { t: typeof translations["en"] }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoSrc = `${import.meta.env.BASE_URL}media/montis-hero.mp4`;
+  const posterSrc = `${import.meta.env.BASE_URL}media/mountain-lake-hero.jpg`;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
   const textY = useTransform(scrollYProgress, [0, 1], [0, 60]);
   const overlay = useTransform(scrollYProgress, [0, 1], [0.25, 0.6]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const tryPlay = () => {
+      video.play().catch(() => {});
+    };
+    tryPlay();
+    video.addEventListener("loadeddata", tryPlay);
+    return () => video.removeEventListener("loadeddata", tryPlay);
+  }, []);
 
   return (
     <section
@@ -527,15 +548,19 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
       className="relative h-[100svh] w-full overflow-hidden bg-montis-navy text-white"
     >
       <motion.div style={{ scale: imageScale }} className="absolute inset-0">
-        <img
-          src="/media/mountain-lake-hero.jpg"
-          alt="Mountain lake"
-          className="w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
-          decoding="sync"
-          referrerPolicy="no-referrer"
-        />
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover object-[56%_center]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={posterSrc}
+          aria-hidden
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
         <motion.div
           style={{ opacity: overlay }}
           className="absolute inset-0 bg-gradient-to-b from-montis-navy/40 via-montis-navy/10 to-montis-navy"
@@ -569,17 +594,6 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
           text={t.hero.title}
         />
       </motion.div>
-
-      {/* Scroll indicator */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-6 flex flex-col items-center gap-2 text-white/70">
-        <span className="eyebrow-s">{t.hero.scroll}</span>
-        <div className="relative h-10 w-[21px] overflow-hidden">
-          <ArrowGlyph
-            className="absolute left-0 top-0 rotate-90"
-            style={{ animation: "scroll-arrow 2.2s ease-in-out infinite" }}
-          />
-        </div>
-      </div>
     </section>
   );
 };
@@ -588,22 +602,67 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
 /* Second screen video                                                 */
 /* ------------------------------------------------------------------ */
 
-const SecondScreenVideo = () => {
+const ADVANTAGE_ICONS = [Mountain, Droplets, ShieldCheck, Sparkles] as const;
+const PURIFICATION_ICONS = [Filter, Sun, Wind, Layers] as const;
+const MAP_EMBED_URL =
+  "https://www.openstreetmap.org/export/embed.html?bbox=69.285%2C41.295%2C69.365%2C41.340&layer=mapnik&marker=41.317432%2C69.325962";
+const MAP_EXTERNAL_URL =
+  "https://umap.openstreetmap.de/ru/map/map_124569#14/41.317432/69.325962";
+
+const SecondScreenVideo = ({ t }: { t: typeof translations["en"] }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasStartedRef = useRef(false);
   const [isMobile, setIsMobile] = useState(false);
-  const videoSrc = `${import.meta.env.BASE_URL}media/Meshy_AI_video.mp4`;
+  const [videoReady, setVideoReady] = useState(false);
+  const videoSrc = `${import.meta.env.BASE_URL}media/montis-bottle.mp4`;
   const mobileImageSrc = `${import.meta.env.BASE_URL}media/black.png`;
-  const posterSrc = `${import.meta.env.BASE_URL}media/mountain-lake-hero.jpg`;
+  const posterSrc = `${import.meta.env.BASE_URL}media/montis-bottle-poster.jpg`;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["center center", "end center"] });
-  const videoStartThreshold = 0.22; // ~half-screen scroll before playback begins
-  const introBlackOpacity = useTransform(scrollYProgress, [0, 0.05, 0.12], [1, 1, 0]);
-  const textBlockY = useTransform(scrollYProgress, [0.1, 0.35], [180, 0]);
-  const textBlockOpacity = useTransform(scrollYProgress, [0.1, 0.28], [0, 1]);
-  const depthBlockY = useTransform(scrollYProgress, [0.16, 0.42], [180, 0]);
-  const depthBlockOpacity = useTransform(scrollYProgress, [0.16, 0.34], [0, 1]);
-  const compositionBlockY = useTransform(scrollYProgress, [0.46, 0.68], [120, 0]);
-  const compositionBlockOpacity = useTransform(scrollYProgress, [0.46, 0.62], [0, 1]);
+  // Progress only moves forward — elements stay locked when scrolling back up.
+  const maxScrollProgress = useMotionValue(0);
+  // Intro text fades out between 0.05–0.12 scroll progress.
+  const INTRO_FADE_END = 0.12;
+  const introBlackOpacity = useTransform(maxScrollProgress, [0, 0.05, INTRO_FADE_END], [1, 1, 0]);
+  const textBlockY = useTransform(maxScrollProgress, [0.1, 0.35], [180, 0]);
+  const textBlockOpacity = useTransform(maxScrollProgress, [0.1, 0.28], [0, 1]);
+  const depthBlockY = useTransform(maxScrollProgress, [0.16, 0.42], [180, 0]);
+  const depthBlockOpacity = useTransform(maxScrollProgress, [0.16, 0.34], [0, 1]);
+  const currentDepth = useTransform(maxScrollProgress, (v) => Math.round(v * t.source.depthMax));
+  const advantageOpacity0 = useTransform(maxScrollProgress, [0.16, 0.24], [0, 1]);
+  const advantageOpacity1 = useTransform(maxScrollProgress, [0.24, 0.32], [0, 1]);
+  const advantageOpacity2 = useTransform(maxScrollProgress, [0.32, 0.40], [0, 1]);
+  const advantageOpacity3 = useTransform(maxScrollProgress, [0.40, 0.48], [0, 1]);
+  const advantageOpacities = [advantageOpacity0, advantageOpacity1, advantageOpacity2, advantageOpacity3];
+  const [depthDisplay, setDepthDisplay] = useState(0);
+
+  useEffect(() => {
+    const syncMax = (v: number) => {
+      const clamped = Math.max(0, Math.min(1, v));
+      if (clamped > maxScrollProgress.get()) maxScrollProgress.set(clamped);
+    };
+    syncMax(scrollYProgress.get());
+    return scrollYProgress.on("change", syncMax);
+  }, [scrollYProgress, maxScrollProgress]);
+
+  useEffect(() => {
+    return currentDepth.on("change", (v) => setDepthDisplay(Math.round(v)));
+  }, [currentDepth]);
+
+  const tryPlayVideo = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || !videoReady || hasStartedRef.current || video.ended) return;
+    void video.play().then(() => {
+      hasStartedRef.current = true;
+    }).catch(() => {});
+  }, [videoReady]);
+
+  const freezeOnLastFrame = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || !Number.isFinite(video.duration)) return;
+    video.pause();
+    video.currentTime = Math.max(0, video.duration - 0.05);
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -613,29 +672,24 @@ const SecondScreenVideo = () => {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Start playback only after the intro line has fully faded out.
   useEffect(() => {
-    // Force the browser to begin buffering immediately after mount.
     if (isMobile) return;
-    videoRef.current?.load();
-  }, [isMobile]);
 
-  useEffect(() => {
-    const unsubscribe = scrollYProgress.on("change", (v) => {
-      const video = videoRef.current;
-      if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
-      const clamped = Math.max(0, Math.min(1, v));
-      const delayedProgress = Math.max(0, (clamped - videoStartThreshold) / (1 - videoStartThreshold));
-      video.currentTime = delayedProgress * video.duration;
-    });
+    const maybePlay = (progress: number) => {
+      if (progress >= INTRO_FADE_END) tryPlayVideo();
+    };
+
+    maybePlay(maxScrollProgress.get());
+    const unsubscribe = maxScrollProgress.on("change", maybePlay);
     return () => unsubscribe();
-  }, [scrollYProgress, videoStartThreshold]);
+  }, [isMobile, maxScrollProgress, tryPlayVideo]);
 
   return (
     <section ref={sectionRef} id="video" className="relative h-[320svh] w-full bg-black">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
         <div
-          className={`section-motion-layer absolute inset-0 bg-cover bg-center ${isMobile ? "bg-black" : ""}`}
-          style={{ backgroundImage: isMobile ? "none" : `url("${posterSrc}")` }}
+          className={`section-motion-layer absolute inset-0 ${isMobile ? "bg-black" : "bg-black"}`}
           aria-hidden="true"
         >
           {isMobile ? (
@@ -648,28 +702,33 @@ const SecondScreenVideo = () => {
               decoding="async"
             />
           ) : (
-            <motion.video
-              ref={videoRef}
-              className="absolute inset-0 z-0 h-full w-full object-cover"
-              muted
-              playsInline
-              preload="auto"
-              poster={posterSrc}
-              disablePictureInPicture
-              aria-hidden
-              onLoadedMetadata={() => {
-                const video = videoRef.current;
-                if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
-                const clamped = Math.max(0, Math.min(1, scrollYProgress.get()));
-                const delayedProgress = Math.max(0, (clamped - videoStartThreshold) / (1 - videoStartThreshold));
-                video.currentTime = delayedProgress * video.duration;
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-            >
-              <source src={videoSrc} type="video/mp4" />
-            </motion.video>
+            <>
+              <img
+                src={posterSrc}
+                alt=""
+                aria-hidden
+                className={`absolute inset-0 z-0 h-full w-full object-contain transition-opacity duration-700 ${
+                  videoReady ? "opacity-0" : "opacity-100"
+                }`}
+                decoding="async"
+              />
+              <video
+                ref={videoRef}
+                className={`absolute inset-0 z-0 h-full w-full object-contain transition-opacity duration-700 ${
+                  videoReady ? "opacity-100" : "opacity-0"
+                }`}
+                muted
+                playsInline
+                preload="auto"
+                poster={posterSrc}
+                disablePictureInPicture
+                aria-hidden
+                onCanPlayThrough={() => setVideoReady(true)}
+                onEnded={freezeOnLastFrame}
+              >
+                <source src={videoSrc} type="video/mp4" />
+              </video>
+            </>
           )}
           {!isMobile && <div className="absolute -right-[10%] md:-right-[20%] top-[-10%] z-10 h-[70%] md:h-[85%] w-[60%] md:w-[55%] rounded-full bg-gradient-to-bl from-montis-blue/[0.07] via-transparent to-transparent blur-3xl"></div>}
           {!isMobile && <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_80%_50%_at_70%_0%,rgba(26,43,86,0.06),transparent)]"></div>}
@@ -681,7 +740,7 @@ const SecondScreenVideo = () => {
               style={{ opacity: introBlackOpacity }}
             >
               <p className="font-serif text-3xl md:text-5xl leading-tight text-white max-w-4xl">
-                Вода добывается из подземного источника
+                {t.source.introLine}
               </p>
             </motion.div>
           )}
@@ -700,125 +759,91 @@ const SecondScreenVideo = () => {
             </motion.div>
           )}
         </div>
-        <div className="absolute inset-0 z-30 flex items-end justify-start px-4 sm:px-6 md:px-12 pb-8 sm:pb-10 md:pb-16 pointer-events-none">
-          <motion.div
-            className="hidden md:block md:col-span-7 md:pl-6 w-full max-w-xl"
-            style={{ y: compositionBlockY, opacity: compositionBlockOpacity }}
-          >
-            <p className="eyebrow text-white/80 mb-3">Основной состав, мг/л</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5">
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">Ca</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Кальций</span>
-                    <span className="eyebrow tabular-nums">20—25</span>
-                  </div>
-                </div>
-              </div>
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">Mg</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Магний</span>
-                    <span className="eyebrow tabular-nums">6—11</span>
-                  </div>
-                </div>
-              </div>
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">Na</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Натрий</span>
-                    <span className="eyebrow tabular-nums">2—7</span>
-                  </div>
-                </div>
-              </div>
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">HCO₃</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Гидрокарбонаты</span>
-                    <span className="eyebrow tabular-nums">50—100</span>
-                  </div>
-                </div>
-              </div>
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">K</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Калий</span>
-                    <span className="eyebrow tabular-nums">0,1—2</span>
-                  </div>
-                </div>
-              </div>
-              <div className="relative py-2 text-white">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-base sm:text-lg md:text-xl">SO₄</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-white/70">Сульфаты</span>
-                    <span className="eyebrow tabular-nums">1—12</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
 
-        <div className="absolute inset-0 z-40 flex items-start md:items-end px-4 sm:px-6 md:px-12 pt-16 sm:pt-20 md:pt-0 pb-8 sm:pb-10 md:pb-14 pointer-events-none">
-          <div className="SequenceContent_rootWrapper__zwUHM SequenceContent_rootWrapper_InColumn__uvVk7 relative text-white w-full h-full flex flex-col md:flex-row md:items-end md:justify-between gap-6 sm:gap-8 md:gap-12">
+        {/* Advantages */}
+        {!isMobile && (
+          <div className="absolute inset-0 z-35 pointer-events-none">
+            {t.source.advantages.map((adv, i) => {
+              const Icon = ADVANTAGE_ICONS[i] ?? Sparkles;
+              const positions = [
+                "left-[14%] md:left-[20%] top-[34%] max-w-[155px]",
+                "right-[24%] md:right-[30%] top-[36%] max-w-[155px]",
+                "left-[14%] md:left-[20%] bottom-[34%] max-w-[155px]",
+                "right-[24%] md:right-[30%] bottom-[32%] max-w-[155px]",
+              ];
+              return (
+                <motion.div
+                  key={adv.title}
+                  className={`absolute ${positions[i]} flex gap-2.5 items-start`}
+                  style={{ opacity: advantageOpacities[i] }}
+                >
+                  <span className="shrink-0 w-8 h-8 rounded-full border border-white/20 bg-white/10 flex items-center justify-center">
+                    <Icon className="w-3.5 h-3.5 text-montis-blue" />
+                  </span>
+                  <div>
+                    <p className="eyebrow-s text-white mb-0.5 leading-tight">{adv.title}</p>
+                    <p className="text-[10px] md:text-[11px] text-white/70 leading-snug">{adv.text}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="absolute inset-0 z-40 pointer-events-none px-4 sm:px-6 md:px-12 pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-10 md:pb-14">
+          <div className="relative w-full h-full">
             <motion.div
-              className="TextInfographic_root__HlMeP SequenceContent_rootTextBlock__tg_D2 relative z-10 self-start mt-1 sm:mt-3 md:mt-0 mb-2 sm:mb-8 md:mb-56 md:self-start flex flex-col items-center sm:items-start text-center sm:text-left max-w-[80vw] sm:max-w-none mx-auto md:mx-0"
+              className="absolute left-0 md:left-0 top-0 z-10 max-w-[78vw] sm:max-w-md text-left"
               style={isMobile ? { y: 0, opacity: 1 } : { y: textBlockY, opacity: textBlockOpacity }}
             >
-              <h2 className="TextInfographic_rootTitle__AHwO3 h-auto w-full font-serif text-[11vw] sm:text-4xl md:text-6xl leading-[0.95] tracking-tight">
-                Сила, добытая <br />
-                с глубины
+              <h2 className="font-serif text-[9vw] sm:text-3xl md:text-5xl leading-[0.95] tracking-tight whitespace-pre-line text-white">
+                {t.source.title}
               </h2>
-              <p className="TextInfographic_rootText__GOs4A all-caps eyebrow text-white/80 mt-4 sm:mt-8 md:mt-36 max-w-md">
-                Мы берём воду там, где ничто не влияет на её состав
+              <p className="eyebrow text-white/75 mt-3 md:mt-4 max-w-sm leading-relaxed normal-case">
+                {t.source.text}
               </p>
             </motion.div>
+
             <motion.div
-              className="DepthRange_root__HDQRC SequenceContent_rootDepthRange__UkmXB relative mt-auto md:mt-0 md:absolute md:right-0 md:bottom-0 text-left md:text-right max-w-[70vw] sm:max-w-sm ml-0 md:ml-auto pb-56"
+              className="absolute right-0 md:right-0 top-[12%] bottom-[4%] md:bottom-[2%] w-20 md:w-24"
               style={{ y: depthBlockY, opacity: depthBlockOpacity }}
             >
-              <div className="flex w-full items-end justify-start gap-4">
-                <div className="DepthRange_rootTextContent__IgMuX absolute left-0 bottom-12">
-                  <p className="all-caps eyebrow text-white/80">
-                    Точка забора<br />
-                    воды находится<br />
-                    на глубине
-                  </p>
-                  <div className="DepthRange_rootValue__7H6TY mt-5">
-                    <span className="DepthRange_rootValueNumber__4OkQW flex items-end justify-start md:justify-end gap-3 font-serif text-6xl md:text-8xl leading-none">
-                      <span className="h-1">430</span>
-                      <ArrowGlyph className="mb-2 md:mb-3" />
-                    </span>
-                    <span className="all-caps eyebrow text-white/80 mt-2 inline-block">метров</span>
-                  </div>
+              <div className="relative h-full">
+                <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-32 md:bottom-36 w-px bg-white/20" />
+                <div className="absolute inset-x-0 top-0 bottom-32 md:bottom-36">
+                  {t.source.depthScale.map((mark) => {
+                    const active = depthDisplay >= mark;
+                    const pct = (mark / t.source.depthMax) * 100;
+                    return (
+                      <div
+                        key={mark}
+                        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5"
+                        style={{ bottom: `${pct}%`, transform: "translate(-50%, 50%)" }}
+                      >
+                        <span
+                          className={`eyebrow-s tabular-nums text-[9px] md:text-[10px] ${
+                            active ? "text-white" : "text-white/45"
+                          }`}
+                        >
+                          {mark}
+                        </span>
+                        <span
+                          className={`h-1 w-1 rounded-full shrink-0 ${
+                            active ? "bg-montis-blue shadow-[0_0_6px_rgba(0,174,239,0.8)]" : "bg-white/30"
+                          }`}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="DepthRange_rootRanges__Vh2Se absolute right-0 bottom-0 mt-0 ml-0 translate-x-20 sm:translate-x-0 md:translate-x-0 flex items-end justify-end gap-5">
-                  <div className="DepthRange_rootRangesValues__KB2cG flex flex-col gap-2">
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">85</span>
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">170</span>
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">250</span>
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">340</span>
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white/70">400</span>
-                    <span className="DepthRange_rootRangesValue__U94kd all-caps eyebrow-s text-white">430</span>
-                  </div>
-                  <picture>
-                    <img
-                      alt=""
-                      loading="lazy"
-                      width="10"
-                      height="203"
-                      decoding="async"
-                      className="DepthRange_rootRangesImage__diGfb opacity-90"
-                      src="https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/ranges.svg"
-                      style={{ color: "transparent" }}
-                    />
-                  </picture>
+                <div className="absolute -bottom-2 md:-bottom-4 left-1/2 -translate-x-1/2 text-center w-28 md:w-32">
+                  <p className="eyebrow text-white/75 text-[9px] md:text-[10px] leading-snug whitespace-pre-line">
+                    {t.source.depthLabel}
+                  </p>
+                  <p className="font-serif text-4xl md:text-5xl text-white tabular-nums leading-none mt-2">
+                    {depthDisplay}
+                  </p>
+                  <p className="eyebrow text-white/75 mt-1 text-[9px] md:text-[10px]">{t.source.depthUnit}</p>
                 </div>
               </div>
             </motion.div>
@@ -874,63 +899,68 @@ const SectionSequence = ({ t }: { t: typeof translations["en"] }) => {
 /* ------------------------------------------------------------------ */
 
 const Composition = ({ t }: { t: typeof translations["en"] }) => {
-  const list = [
-    t.composition.items.ca,
-    t.composition.items.mg,
-    t.composition.items.na,
-    t.composition.items.hco3,
-    t.composition.items.k,
-    t.composition.items.so4,
+  const items = [
+    { ...t.composition.items.ca, pos: "top-[2%] left-1/2 -translate-x-1/2" },
+    { ...t.composition.items.mg, pos: "top-[20%] right-[0%]" },
+    { ...t.composition.items.na, pos: "top-[48%] right-[-2%] -translate-y-1/2" },
+    { ...t.composition.items.so4, pos: "bottom-[16%] right-[0%]" },
+    { ...t.composition.items.k, pos: "bottom-[2%] left-1/2 -translate-x-1/2" },
+    { ...t.composition.items.hco3, pos: "bottom-[16%] left-[0%]" },
   ];
 
   return (
-    <section id="composition" className="relative py-28 md:py-40 bg-montis-cream">
-      <div className="container mx-auto px-4 sm:px-6 md:px-12 grid md:grid-cols-12 gap-8 md:gap-10">
-        <div className="md:col-span-5">
-          <Eyebrow className="text-montis-navy/80 mb-6">{t.composition.eyebrow}</Eyebrow>
-          <RevealLines
-            as="h2"
-            className="font-serif text-5xl md:text-7xl text-montis-navy mb-8"
-            text={t.composition.title}
-          />
-          <p className="text-montis-ink/70 max-w-md mb-10 leading-relaxed">{t.composition.text}</p>
-
-          <div className="border-t border-montis-ink/15 pt-8">
-            <div className="eyebrow text-montis-ink/70 mb-2">{t.composition.mineralization}</div>
-            <div className="flex items-baseline gap-3">
-              <span className="eyebrow text-montis-ink/70">↗</span>
-              <span className="font-serif text-5xl md:text-6xl text-montis-navy">
-                {t.composition.mineralizationValue}
-              </span>
-              <span className="eyebrow text-montis-ink/70">{t.composition.mineralizationUnit}</span>
+    <section id="composition" className="relative py-20 md:py-28 bg-montis-cream overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12">
+        <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-center">
+          <div className="md:col-span-5">
+            <Eyebrow className="text-montis-navy/80 mb-4 md:mb-5">{t.composition.eyebrow}</Eyebrow>
+            <RevealLines
+              as="h2"
+              className="font-serif text-4xl md:text-6xl text-montis-navy mb-5 md:mb-6"
+              text={t.composition.title}
+            />
+            <p className="text-montis-ink/70 max-w-md mb-6 md:mb-8 leading-relaxed text-sm md:text-base">
+              {t.composition.text}
+            </p>
+            <div className="border-t border-montis-ink/15 pt-5 md:pt-6">
+              <div className="eyebrow text-montis-ink/70 mb-2">{t.composition.mineralization}</div>
+              <div className="flex items-baseline gap-3">
+                <span className="font-serif text-4xl md:text-5xl text-montis-navy">
+                  {t.composition.mineralizationValue}
+                </span>
+                <span className="eyebrow text-montis-ink/70">{t.composition.mineralizationUnit}</span>
+              </div>
             </div>
+            <p className="eyebrow text-montis-ink/60 mt-6 hidden md:block">{t.composition.tableTitle}</p>
           </div>
-        </div>
 
-        <div className="md:col-span-7 md:pl-12">
-          <p className="eyebrow text-montis-ink/70 mb-6">{t.composition.tableTitle}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 md:gap-x-10 gap-y-2">
-            {list.map((it, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-10% 0px" }}
-                transition={{ duration: 0.6, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                className="relative py-4 text-montis-navy"
-              >
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-serif text-2xl md:text-3xl">{it.label}</span>
-                  <div className="flex-1 flex items-center gap-3 justify-end">
-                    <span className="eyebrow text-montis-ink/70">{it.desc}</span>
-                    <span className="eyebrow tabular-nums">{it.value}</span>
+          <div className="md:col-span-7">
+            <div className="relative mx-auto w-full max-w-xl aspect-[4/5] md:aspect-[5/6]">
+              <div className="absolute inset-[14%] rounded-full border border-montis-navy/10 bg-gradient-to-b from-white/80 to-montis-cream overflow-hidden flex items-center justify-center">
+                <img
+                  src="/media/1l.png"
+                  alt="MONTIS"
+                  className="relative z-10 h-full w-full object-cover object-[center_42%] scale-[1.35] drop-shadow-[0_20px_50px_rgba(26,43,86,0.16)]"
+                />
+              </div>
+              {items.map((it, i) => (
+                <motion.div
+                  key={it.label}
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-10% 0px" }}
+                  transition={{ duration: 0.55, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  className={`absolute ${it.pos} z-20 w-[96px] sm:w-[104px] rounded-xl border border-montis-navy/10 bg-white/92 backdrop-blur-sm px-2.5 py-2 shadow-[0_6px_24px_rgba(26,43,86,0.07)] overflow-hidden`}
+                >
+                  <div className="font-serif text-lg text-montis-navy leading-none">{it.label}</div>
+                  <div className="text-montis-ink/60 mt-0.5 text-[6.5px] md:text-[7px] leading-[1.2] font-semibold uppercase tracking-[0.06em] break-words hyphens-auto">
+                    {it.desc}
                   </div>
-                </div>
-                <div className="text-montis-navy/50 mt-3">
-                  <AnimatedLine />
-                </div>
-              </motion.div>
-            ))}
+                  <div className="eyebrow tabular-nums text-montis-blue mt-1 text-[9px]">{it.value}</div>
+                </motion.div>
+              ))}
+            </div>
+            <p className="eyebrow text-montis-ink/60 mt-4 md:hidden text-center">{t.composition.tableTitle}</p>
           </div>
         </div>
       </div>
@@ -943,8 +973,9 @@ const Composition = ({ t }: { t: typeof translations["en"] }) => {
 /* ------------------------------------------------------------------ */
 
 const Purification = ({ t }: { t: typeof translations["en"] }) => {
-  const [active, setActive] = useState(0);
+  const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
   const stepBackgrounds = ["/media/filtration.png", "/media/uv.png", "/media/ozone.png", "/media/osmos.png"];
+
   return (
     <section id="purification" className="relative py-28 md:py-40 bg-montis-navy text-white overflow-hidden">
       <div className="absolute inset-0 opacity-25 blur-3xl bg-gradient-to-r from-montis-blue via-transparent to-transparent" />
@@ -961,74 +992,58 @@ const Purification = ({ t }: { t: typeof translations["en"] }) => {
           <p className="md:col-span-5 text-white/65 leading-relaxed md:pt-4">{t.purification.text}</p>
         </div>
 
-        <div className="relative">
-          <div className="hidden lg:block absolute left-0 right-0 top-11 h-px bg-white/10" />
-          <motion.div
-            className="hidden lg:block absolute left-0 top-11 h-px bg-gradient-to-r from-montis-blue via-[#52c6ff] to-montis-blue shadow-[0_0_18px_rgba(0,174,239,0.65)]"
-            animate={{ width: `${((active + 1) / t.purification.steps.length) * 100}%` }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {t.purification.steps.map((step, i) => {
-            const isActive = active === i;
+            const Icon = PURIFICATION_ICONS[i] ?? Filter;
+            const flipped = flippedIndex === i;
             return (
-              <motion.button
-                key={i}
-                onClick={() => setActive(i)}
+              <motion.div
+                key={step.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-10% 0px" }}
                 transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className={`group relative h-[340px] sm:h-96 rounded-3xl overflow-hidden p-[1px] text-left transition duration-500 cursor-pointer ${
-                  isActive
-                    ? "bg-gradient-to-b from-montis-blue/75 via-white/25 to-transparent shadow-[0_0_35px_rgba(0,174,239,0.45)]"
-                    : "bg-gradient-to-b from-white/15 to-transparent hover:from-montis-blue/60"
-                }`}
               >
-                <img
-                  src={stepBackgrounds[i] ?? "/media/mountain-lake-hero.jpg"}
-                  alt=""
-                  aria-hidden
-                  loading={i === 0 ? "eager" : "lazy"}
-                  fetchPriority={i === 0 ? "high" : "auto"}
-                  className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-montis-navy/55" />
-                <div className="absolute inset-0 bg-gradient-to-b from-montis-navy/20 via-montis-navy/35 to-montis-navy/80" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(0,174,239,0.20),transparent_60%)] opacity-0 transition duration-500 group-hover:opacity-100" />
-
-                <div className="relative z-10 h-full p-6 md:p-7 flex flex-col justify-between">
-                  <div className="flex items-center justify-between">
-                    <span className="eyebrow-s text-white/70">0{i + 1}</span>
-                    <div className="w-10 h-10 rounded-full border border-white/20 bg-white/[0.03] flex items-center justify-center text-white transition duration-500 group-hover:border-montis-blue/50 group-hover:translate-x-1">
-                      <ArrowGlyph
-                        className={`transition-all duration-500 ${isActive ? "text-montis-blue" : "text-white/90"}`}
+                <FlipCard
+                  flipped={flipped}
+                  onFlip={() => setFlippedIndex(flipped ? null : i)}
+                  ariaLabel={step.title}
+                  className="rounded-3xl p-[1px] bg-gradient-to-b from-white/15 to-transparent hover:from-montis-blue/60"
+                  front={
+                    <div className="relative h-full bg-montis-navy overflow-hidden">
+                      <img
+                        src={stepBackgrounds[i]}
+                        alt=""
+                        aria-hidden
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading={i === 0 ? "eager" : "lazy"}
                       />
+                      <div className="absolute inset-0 bg-montis-navy/60" />
+                      <div className="relative z-10 h-full p-6 md:p-7 flex flex-col justify-between">
+                        <div className="flex items-center justify-between">
+                          <span className="eyebrow-s text-white/70">0{i + 1}</span>
+                          <span className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-montis-blue" />
+                          </span>
+                        </div>
+                        <h3 className="font-serif text-3xl text-white leading-tight">{step.title}</h3>
+                      </div>
                     </div>
-                  </div>
-
-                  <motion.div
-                    initial={false}
-                    animate={{ y: isActive ? -2 : 0 }}
-                    transition={{ duration: 0.35 }}
-                    className="space-y-3"
-                  >
-                    <h3 className="font-serif text-3xl text-white leading-tight">{step.title}</h3>
-                    <p
-                      className={`text-sm leading-relaxed transition-colors duration-500 ${
-                        isActive ? "text-white/90" : "text-white/65"
-                      }`}
-                    >
-                      {step.desc}
-                    </p>
-                  </motion.div>
-                </div>
-              </motion.button>
+                  }
+                  back={
+                    <div className="relative h-full bg-montis-navy p-6 md:p-7 flex flex-col justify-center">
+                      <div className="absolute inset-0 bg-gradient-to-br from-montis-blue/20 to-transparent" />
+                      <div className="relative z-10">
+                        <span className="eyebrow-s text-montis-blue mb-4 block">0{i + 1}</span>
+                        <h3 className="font-serif text-2xl text-white mb-4">{step.title}</h3>
+                        <p className="text-sm text-white/85 leading-relaxed">{step.desc}</p>
+                      </div>
+                    </div>
+                  }
+                />
+              </motion.div>
             );
           })}
-          </div>
         </div>
       </div>
     </section>
@@ -1039,8 +1054,76 @@ const Purification = ({ t }: { t: typeof translations["en"] }) => {
 /* Formats                                                             */
 /* ------------------------------------------------------------------ */
 
+const FormatProductCard = ({
+  card,
+  index,
+  stillLabel,
+}: {
+  card: (typeof translations)["ru"]["formats"]["cards"][number];
+  index: number;
+  stillLabel: string;
+}) => {
+  const [flipped, setFlipped] = useState(false);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => setFlipped((f) => !f), 5000);
+    return () => window.clearInterval(id);
+  }, [paused]);
+
+  const cardShell = (
+    volume: string,
+    desc: string,
+    image: string,
+    label: string,
+    bgClass: string,
+  ) => (
+    <div className={`relative h-full overflow-hidden ${bgClass}`}>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#a5bfdb]/40 via-[#d7e5f5]/30 to-[#9ab7d6]/35" />
+      <div className="relative z-10 h-full p-6 md:p-8 flex flex-col">
+        <div>
+          <span className="eyebrow-s text-white/80">{label}</span>
+          <h3 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-none text-white mt-2">{volume}</h3>
+          <p className="mt-3 sm:mt-4 text-white/95 text-lg sm:text-xl leading-tight whitespace-pre-line">{desc}</p>
+        </div>
+        <div className="mt-auto flex justify-center items-end">
+          <img
+            src={image}
+            alt=""
+            className="max-h-[300px] sm:max-h-[420px] md:max-h-[500px] w-auto object-contain drop-shadow-[0_18px_45px_rgba(10,18,45,0.24)]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10% 0px" }}
+      transition={{ duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      className="rounded-[24px] md:rounded-[28px] border border-white/30 shadow-[0_12px_40px_rgba(15,29,61,0.12)] overflow-hidden"
+    >
+      <FlipCard
+        flipped={flipped}
+        onFlip={() => setFlipped((f) => !f)}
+        heightClass="h-[440px] sm:h-[520px] md:h-[620px]"
+        ariaLabel={`MONTIS ${card.volume}`}
+        front={cardShell(card.volume, card.desc, card.image, stillLabel, "bg-montis-navy/15")}
+        back={cardShell(card.volume, card.desc, card.sparkImage, card.sparkLabel, "bg-montis-navy")}
+      />
+    </motion.div>
+  );
+};
+
 const Formats = ({ t }: { t: typeof translations["en"] }) => (
-  <section className="relative py-28 md:py-36 bg-montis-cream overflow-hidden">
+  <section id="formats" className="relative py-28 md:py-36 bg-montis-cream overflow-hidden">
     <div className="container mx-auto px-4 sm:px-6 md:px-12">
       <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-end mb-12 md:mb-14">
         <div className="md:col-span-7">
@@ -1056,107 +1139,12 @@ const Formats = ({ t }: { t: typeof translations["en"] }) => (
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
         {t.formats.cards.map((card, i) => (
-          <motion.a
-            key={card.volume}
-            href="#contact"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-10% 0px" }}
-            transition={{ duration: 0.7, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative h-[440px] sm:h-[520px] md:h-[620px] rounded-[24px] md:rounded-[28px] overflow-hidden bg-montis-navy/15 border border-white/30 shadow-[0_12px_40px_rgba(15,29,61,0.12)]"
-          >
-            <img
-              src="/media/mountain-lake-hero.jpg"
-              alt=""
-              aria-hidden
-              className="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#a5bfdb]/40 via-[#d7e5f5]/30 to-[#9ab7d6]/35" />
-            <div className="absolute inset-0 backdrop-blur-[2px]" />
-
-            <div className="relative z-10 h-full p-6 md:p-8 flex flex-col">
-              <div>
-                <h3 className="font-serif text-4xl sm:text-5xl md:text-6xl leading-none text-white">{card.volume}</h3>
-                <p className="mt-3 sm:mt-4 text-white/95 text-lg sm:text-xl leading-tight whitespace-pre-line">{card.desc}</p>
-              </div>
-
-              <div className="mt-auto flex justify-center items-end">
-                <img
-                  src={card.image}
-                  alt={`Бутылка MONTIS ${card.volume}`}
-                  className="max-h-[300px] sm:max-h-[420px] md:max-h-[500px] w-auto object-contain drop-shadow-[0_18px_45px_rgba(10,18,45,0.24)] transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-              </div>
-            </div>
-          </motion.a>
+          <FormatProductCard key={card.volume} card={card} index={i} stillLabel={t.formats.stillLabel} />
         ))}
       </div>
     </div>
   </section>
 );
-
-/* ------------------------------------------------------------------ */
-/* Gallery slider                                                      */
-/* ------------------------------------------------------------------ */
-
-const GALLERY: { src: string; alt: string }[] = [
-  { src: "/media/mountain-stream.jpg", alt: "Mountain stream" },
-  { src: "/media/alpine-vista.jpg", alt: "Alpine vista" },
-  { src: "/media/reflective-lake.jpg", alt: "Reflective lake" },
-  { src: "/media/mountain-valley.jpg", alt: "River valley" },
-  { src: "/media/mountain-lake-hero.jpg", alt: "Mountain lake" },
-];
-
-const Gallery = ({ t }: { t: typeof translations["en"] }) => {
-  const [index, setIndex] = useState(0);
-  const max = GALLERY.length;
-  return (
-    <section id="gallery" className="relative py-24 md:py-32 bg-montis-cream">
-      <div className="container mx-auto px-4 sm:px-6 md:px-12">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4 sm:gap-6">
-          <Eyebrow className="text-montis-navy">{t.gallery.eyebrow}</Eyebrow>
-          <div className="flex items-center gap-4">
-            <span className="eyebrow tabular-nums">
-              {String(index + 1).padStart(2, "0")} / {String(max).padStart(2, "0")}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                aria-label="Previous"
-                onClick={() => setIndex((index - 1 + max) % max)}
-                className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full border border-montis-ink/15 text-montis-navy flex items-center justify-center hover:bg-montis-navy hover:text-white transition-colors"
-              >
-                <ArrowGlyph className="rotate-180" />
-              </button>
-              <button
-                aria-label="Next"
-                onClick={() => setIndex((index + 1) % max)}
-                className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full border border-montis-ink/15 text-montis-navy flex items-center justify-center hover:bg-montis-navy hover:text-white transition-colors"
-              >
-                <ArrowGlyph />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative aspect-[16/9] md:aspect-[21/9] rounded-3xl overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={GALLERY[index].src}
-              src={GALLERY[index].src}
-              alt={GALLERY[index].alt}
-              className="absolute inset-0 w-full h-full object-cover"
-              initial={{ scale: 1.08, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 1.02, opacity: 0 }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              referrerPolicy="no-referrer"
-            />
-          </AnimatePresence>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 /* ------------------------------------------------------------------ */
 /* Distributors – vertical marquees                                    */
@@ -1193,6 +1181,29 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
       </div>
     </div>
 
+    <div className="container mx-auto px-4 sm:px-6 md:px-12 mb-14 md:mb-16">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
+        <Eyebrow className="text-montis-navy">{t.distributors.mapTitle}</Eyebrow>
+        <a
+          href={MAP_EXTERNAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="eyebrow-s text-montis-navy hover:text-montis-blue transition-colors"
+        >
+          {t.distributors.mapLink} ↗
+        </a>
+      </div>
+      <div className="relative aspect-[16/10] md:aspect-[21/9] rounded-3xl overflow-hidden border border-montis-ink/10 bg-white shadow-[0_12px_40px_rgba(15,29,61,0.08)]">
+        <iframe
+          title={t.distributors.mapTitle}
+          src={MAP_EMBED_URL}
+          className="absolute inset-0 h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </div>
+
     <div
       className="relative h-[56vh] md:h-[64vh] border-y border-montis-ink/15"
       style={{
@@ -1222,15 +1233,9 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
 
     <div className="container mx-auto px-4 sm:px-6 md:px-12 mt-12 md:mt-14 flex flex-wrap gap-3 sm:gap-4">
       <a
-        href="#contact"
-        className="group inline-flex min-h-[44px] items-center gap-3 pl-5 sm:pl-6 pr-4 sm:pr-5 py-3 sm:py-4 bg-montis-navy text-white rounded-full relative overflow-hidden"
-      >
-        <span className="eyebrow-s relative z-10">{t.distributors.online}</span>
-        <ArrowGlyph className="relative z-10 transition-transform duration-500 group-hover:translate-x-1" />
-        <span className="absolute inset-0 bg-montis-blue translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-      </a>
-      <a
-        href="#contact"
+        href={MAP_EXTERNAL_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className="group inline-flex min-h-[44px] items-center gap-3 pl-5 sm:pl-6 pr-4 sm:pr-5 py-3 sm:py-4 border border-montis-navy text-montis-navy rounded-full relative overflow-hidden"
       >
         <span className="eyebrow-s relative z-10 transition-colors group-hover:text-white">{t.distributors.offline}</span>
@@ -1285,7 +1290,7 @@ const Footer = ({ t }: { t: typeof translations["en"] }) => (
     <div className="container mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-28">
       <div className="grid md:grid-cols-12 gap-10">
         <div className="md:col-span-5">
-          <div className="font-serif text-5xl md:text-7xl text-montis-navy tracking-tighter mb-6">MONTIS</div>
+          <MontisLogoLink iconSize={56} variant="full" className="mb-6" />
           <p className="text-montis-ink/70 max-w-md">{t.footer.desc}</p>
           <div className="flex gap-3 mt-8">
             <a href="#" className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full border border-montis-ink/15 flex items-center justify-center text-montis-navy hover:bg-montis-navy hover:text-white transition-colors">
@@ -1312,7 +1317,7 @@ const Footer = ({ t }: { t: typeof translations["en"] }) => (
             <li><a href="#video" className="hover:text-montis-blue transition-colors">{t.nav.source}</a></li>
             <li><a href="#composition" className="hover:text-montis-blue transition-colors">{t.nav.composition}</a></li>
             <li><a href="#purification" className="hover:text-montis-blue transition-colors">{t.nav.purification}</a></li>
-            <li><a href="#gallery" className="hover:text-montis-blue transition-colors">{t.nav.gallery}</a></li>
+            <li><a href="#formats" className="hover:text-montis-blue transition-colors">{t.formats.eyebrow.replace("✦ ", "")}</a></li>
             <li><a href="#distributors" className="hover:text-montis-blue transition-colors">{t.footer.brand}</a></li>
           </ul>
         </div>
@@ -1374,11 +1379,10 @@ export default function App() {
 
       <main>
         <Hero t={t} />
-        <SecondScreenVideo />
+        <SecondScreenVideo t={t} />
         <Composition t={t} />
         <Purification t={t} />
         <Formats t={t} />
-        <Gallery t={t} />
         <Distributors t={t} />
         <CTA t={t} />
       </main>
