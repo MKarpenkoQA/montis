@@ -1,7 +1,14 @@
 const MEDIA_CACHE = "montis-media-v1";
 
-// Cache every media file used by the landing page for instant replay/offline.
-const MEDIA_ASSETS = [
+const CRITICAL_ASSETS = [
+  "/media/montis-hero.mp4",
+  "/media/mountain-lake-hero.jpg",
+  "/media/logo-montis-icon.png",
+  "/media/logo-montis.png",
+];
+
+// Cached in the background after the hero is ready.
+const DEFERRED_ASSETS = [
   "/media/0,5.png",
   "/media/1.5l.png",
   "/media/1l.png",
@@ -10,12 +17,9 @@ const MEDIA_ASSETS = [
   "/media/gaz-1.5l.png",
   "/media/montis-bottle.mp4",
   "/media/montis-bottle-poster.jpg",
-  "/media/montis-hero.mp4",
-  "/media/logo-montis.png",
   "/media/alpine-vista.jpg",
   "/media/back.png",
   "/media/filtration.png",
-  "/media/mountain-lake-hero.jpg",
   "/media/mountain-stream.jpg",
   "/media/mountain-valley.jpg",
   "/media/osmos.png",
@@ -26,9 +30,20 @@ const MEDIA_ASSETS = [
   "https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/ranges.svg",
 ];
 
+const cacheInBackground = (urls) => {
+  caches.open(MEDIA_CACHE).then((cache) => {
+    for (const url of urls) {
+      void cache.add(url).catch(() => {});
+    }
+  });
+};
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(MEDIA_CACHE).then((cache) => cache.addAll(MEDIA_ASSETS)).then(() => self.skipWaiting()),
+    caches
+      .open(MEDIA_CACHE)
+      .then((cache) => cache.addAll(CRITICAL_ASSETS))
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -39,7 +54,8 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(keys.filter((key) => key !== MEDIA_CACHE).map((key) => caches.delete(key))),
       )
-      .then(() => self.clients.claim()),
+      .then(() => self.clients.claim())
+      .then(() => cacheInBackground(DEFERRED_ASSETS)),
   );
 });
 

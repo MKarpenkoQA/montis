@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MONTIS — Crystal pure artesian water from the mountains</title>
     <meta name="description" content="MONTIS is a new brand of natural artesian drinking water, drawn from a deep spring in the Chirchik river valley." />
-    <!-- Critical image + video assets used in the first viewport. -->
-    <link rel="preload" href="/media/mountain-lake-hero.jpg" as="image" fetchpriority="high" />
-    <link rel="preload" href="/media/montis-hero.mp4" as="video" type="video/mp4" />
+    <!-- Hero video is the only critical media hint on first paint. -->
+    <link rel="preload" href="/media/montis-hero.mp4" as="video" type="video/mp4" fetchpriority="high" />
     <!-- Preconnect + preload font stylesheet to reduce text render delay. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,14 +19,6 @@
       href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap"
       rel="stylesheet"
     />
-    <!-- Next-interaction media are fetched with low priority in idle time. -->
-    <link rel="prefetch" href="/media/montis-bottle-poster.jpg" as="image" />
-    <link rel="prefetch" href="/media/montis-bottle.mp4" as="video" type="video/mp4" />
-    <link rel="prefetch" href="/media/mountain-valley.jpg" as="image" />
-    <link rel="prefetch" href="/media/filtration.png" as="image" />
-    <link rel="prefetch" href="/media/uv.png" as="image" />
-    <link rel="prefetch" href="/media/ozone.png" as="image" />
-    <link rel="prefetch" href="/media/osmos.png" as="image" />
   </head>
   <body>
     <div id="root"></div>

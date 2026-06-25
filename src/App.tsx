@@ -11,7 +11,6 @@ import {
   useSpring,
   AnimatePresence,
   useInView,
-  animate,
 } from "motion/react";
 import {
   Instagram,
@@ -39,6 +38,8 @@ import {
 } from "react";
 import { MontisLogo, MontisLogoLink } from "./components/MontisLogo";
 import { FlipCard } from "./components/FlipCard";
+import { preloadCriticalContent, prefetchSecondaryContent } from "./preloadContent";
+import { registerServiceWorker } from "./serviceWorkerRegistration";
 
 type Language = "ru" | "uz" | "en";
 
@@ -364,16 +365,21 @@ const Preloader = ({ onDone }: { onDone: () => void }) => {
   const [display, setDisplay] = useState("00");
 
   useEffect(() => {
-    const controls = animate(mv, 100, {
-      duration: 1.8,
-      ease: [0.33, 1, 0.68, 1],
-      onUpdate: (v) => setDisplay(String(Math.floor(v)).padStart(2, "0")),
-      onComplete: () => {
-        // Slight linger before dismissing the preloader.
-        setTimeout(onDone, 420);
-      },
+    let cancelled = false;
+
+    void preloadCriticalContent((progress) => {
+      if (cancelled) return;
+      const rounded = Math.min(100, Math.floor(progress));
+      setDisplay(String(rounded).padStart(2, "0"));
+      mv.set(progress);
+    }).then(() => {
+      if (cancelled) return;
+      setTimeout(onDone, 420);
     });
-    return () => controls.stop();
+
+    return () => {
+      cancelled = true;
+    };
   }, [mv, onDone]);
 
   const maskInset = useTransform(mv, [0, 100], [0, 100]);
@@ -806,7 +812,7 @@ const SecondScreenVideo = ({ t }: { t: typeof translations["en"] }) => {
 
             <motion.div
               className="absolute right-0 md:right-0 top-[12%] bottom-[4%] md:bottom-[2%] w-20 md:w-24"
-              style={{ y: depthBlockY, opacity: depthBlockOpacity }}
+              style={isMobile ? { y: 0, opacity: 1 } : { y: depthBlockY, opacity: depthBlockOpacity }}
             >
               <div className="relative h-full">
                 <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-32 md:bottom-36 w-px bg-white/20" />
@@ -999,8 +1005,8 @@ const Purification = ({ t }: { t: typeof translations["en"] }) => {
             return (
               <motion.div
                 key={step.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-10% 0px" }}
                 transition={{ duration: 0.7, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -1100,20 +1106,21 @@ const FormatProductCard = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-10% 0px" }}
       transition={{ duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
-      className="rounded-[24px] md:rounded-[28px] border border-white/30 shadow-[0_12px_40px_rgba(15,29,61,0.12)] overflow-hidden"
+      className="rounded-[24px] md:rounded-[28px] border border-white/30 shadow-[0_12px_40px_rgba(15,29,61,0.12)]"
     >
       <FlipCard
         flipped={flipped}
         onFlip={() => setFlipped((f) => !f)}
         heightClass="h-[440px] sm:h-[520px] md:h-[620px]"
+        className="overflow-hidden rounded-[24px] md:rounded-[28px]"
         ariaLabel={`MONTIS ${card.volume}`}
         front={cardShell(card.volume, card.desc, card.image, stillLabel, "bg-montis-navy/15")}
         back={cardShell(card.volume, card.desc, card.sparkImage, card.sparkLabel, "bg-montis-navy")}
@@ -1345,6 +1352,12 @@ export default function App() {
 
   const t = translations[lang];
 
+  const handlePreloaderDone = useCallback(() => {
+    setLoading(false);
+    prefetchSecondaryContent();
+    registerServiceWorker();
+  }, []);
+
   useEffect(() => {
     const handle = () => setIsLangOpen(false);
     if (isLangOpen) window.addEventListener("click", handle);
@@ -1366,28 +1379,32 @@ export default function App() {
   return (
     <div className="relative min-h-screen">
       <AnimatePresence>
-        {loading && <Preloader key="preloader" onDone={() => setLoading(false)} />}
+        {loading && <Preloader key="preloader" onDone={handlePreloaderDone} />}
       </AnimatePresence>
 
-      <Header
-        t={t}
-        lang={lang}
-        setLang={setLang}
-        isLangOpen={isLangOpen}
-        setIsLangOpen={setIsLangOpen}
-      />
+      {!loading && (
+        <>
+          <Header
+            t={t}
+            lang={lang}
+            setLang={setLang}
+            isLangOpen={isLangOpen}
+            setIsLangOpen={setIsLangOpen}
+          />
 
-      <main>
-        <Hero t={t} />
-        <SecondScreenVideo t={t} />
-        <Composition t={t} />
-        <Purification t={t} />
-        <Formats t={t} />
-        <Distributors t={t} />
-        <CTA t={t} />
-      </main>
+          <main>
+            <Hero t={t} />
+            <SecondScreenVideo t={t} />
+            <Composition t={t} />
+            <Purification t={t} />
+            <Formats t={t} />
+            <Distributors t={t} />
+            <CTA t={t} />
+          </main>
 
-      <Footer t={t} />
+          <Footer t={t} />
+        </>
+      )}
     </div>
   );
 }
