@@ -19,6 +19,7 @@ const DEFERRED_ASSETS = [
   "/media/montis-bottle-poster.jpg",
   "/media/alpine-vista.jpg",
   "/media/back.png",
+  "/media/black.png",
   "/media/filtration.png",
   "/media/mountain-stream.jpg",
   "/media/mountain-valley.jpg",

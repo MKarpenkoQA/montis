@@ -38,243 +38,14 @@ import {
 } from "react";
 import { MontisLogo, MontisLogoLink } from "./components/MontisLogo";
 import { FlipCard } from "./components/FlipCard";
-import { preloadCriticalContent, prefetchSecondaryContent } from "./preloadContent";
+import {
+  getPreloadedHeroVideoSrc,
+  preloadCriticalContent,
+  prefetchSecondaryContent,
+} from "./preloadContent";
 import { registerServiceWorker } from "./serviceWorkerRegistration";
-
-type Language = "ru" | "uz" | "en";
-
-/* ------------------------------------------------------------------ */
-/* Translations                                                        */
-/* ------------------------------------------------------------------ */
-
-const translations = {
-  ru: {
-    nav: { source: "Источник", composition: "Состав", purification: "Очистка", contact: "Связаться" },
-    buy: "Где купить",
-    hero: {
-      eyebrow: "✦ Реликтовая вода",
-      title: "Вода,\nсозданная\nприродой",
-      subtitle: "100% источник природной энергии из самого сердца гор",
-    },
-    source: {
-      eyebrow: "✦ Уникальность",
-      title: "Сила, добытая\nс глубины",
-      text: "Мы берём воду там, где ничто не влияет на её состав — из защищённого артезианского горизонта под толщей горных пород.",
-      introLine: "Вода добывается из подземного источника",
-      depthLabel: "Точка забора воды\nнаходится на глубине",
-      depthUnit: "метров",
-      depthMax: 430,
-      depthScale: [0, 85, 170, 250, 340, 400, 430],
-      advantages: [
-        { title: "Артезианский источник", text: "Вода добывается с глубины 430 м из защищённого горизонта." },
-        { title: "Ультралёгкая минерализация", text: "До 0,2 г/л — идеальна для ежедневного употребления." },
-        { title: "Природный баланс", text: "Оптимальное содержание микроэлементов без искусственных добавок." },
-        { title: "4 ступени очистки", text: "Современные технологии сохраняют природные свойства воды." },
-      ],
-    },
-    composition: {
-      eyebrow: "✦ Минеральный состав",
-      title: "Природный\nбаланс",
-      text: "MONTIS обладает лёгкой минерализацией и оптимальным содержанием микроэлементов для ежедневного употребления.",
-      mineralization: "Сверхлёгкая минерализация",
-      mineralizationValue: "до 0,2",
-      mineralizationUnit: "г/л",
-      tableTitle: "Основной состав, мг/л",
-      items: {
-        ca: { label: "Ca", value: "20—25", desc: "Кальций" },
-        mg: { label: "Mg", value: "6—11", desc: "Магний" },
-        na: { label: "Na", value: "2—7", desc: "Натрий" },
-        hco3: { label: "HCO₃", value: "50—100", desc: "Гидрокарбонаты" },
-        k:  { label: "K",  value: "0,1—2", desc: "Калий" },
-        so4:{ label: "SO₄", value: "1—12", desc: "Сульфаты" },
-      },
-    },
-    purification: {
-      eyebrow: "✦ Технологии",
-      title: "4 ступени\nочистки",
-      text: "Самые современные методы фильтрации сохраняют природные свойства воды и делают её абсолютно безопасной.",
-      steps: [
-        { title: "Фильтрация", desc: "Удаление механических примесей через систему многослойных фильтров." },
-        { title: "УФ-обработка", desc: "Обеззараживание ультрафиолетом, уничтожающим бактерии и вирусы." },
-        { title: "Озонирование", desc: "Насыщение озоном для глубокой дезинфекции и чистоты вкуса." },
-        { title: "Осмос", desc: "Тонкая очистка на молекулярном уровне." },
-      ],
-    },
-    formats: {
-      eyebrow: "✦ Форматы",
-      title: "Удобство в\nкаждом формате",
-      text: "MONTIS представлена в различных объемах, чтобы вода, которой вы доверяете, всегда была рядом.",
-      stillLabel: "Негазированная",
-      cards: [
-        { volume: "0,5 л", desc: "Идеально\nна каждый день", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Газированная" },
-        { volume: "1 л", desc: "Баланс\nпользы и объема", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Газированная" },
-        { volume: "1,5 л", desc: "Легко утоляет\nжажду", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Газированная" },
-      ],
-    },
-    distributors: {
-      eyebrow: "✦ Где купить",
-      title: "MONTIS рядом\nс вами",
-      text: "Вы найдёте MONTIS в супермаркетах, ресторанах и кофейнях по всей стране, а также на популярных площадках доставки.",
-      offline: "Найти магазин",
-      mapTitle: "Точки продаж",
-      mapLink: "Открыть карту",
-    },
-    cta: { eyebrow: "✦ Поддержать баланс", title: "Почувствуйте\nэнергию гор", button: "Сотрудничать с нами" },
-    footer: {
-      desc: "Новый стандарт природной воды. Мы заботимся о вашем здоровье, предоставляя продукт высочайшего качества.",
-      contacts: "Контакты", nav: "Навигация", brand: "Где купить", rights: "Все права защищены.",
-      privacy: "Политика конфиденциальности", terms: "Условия использования",
-    },
-  },
-  uz: {
-    nav: { source: "Manba", composition: "Tarkib", purification: "Tozalash", contact: "Bog'lanish" },
-    buy: "Qayerdan sotib olish",
-    hero: { eyebrow: "✦ Relikt suv", title: "Tabiat tomonidan\nyaratilgan suv", subtitle: "Tog'lar qalbidagi tabiiy energiya manbai" },
-    source: {
-      eyebrow: "✦ Noyoblik",
-      title: "Chuqurlikdan\nolingan kuch",
-      text: "Biz suvni uning tarkibiga hech narsa ta'sir qilmaydigan joyda — himoyalangan artezian gorizontidan olamiz.",
-      introLine: "Suv yer osti manbasidan olinadi",
-      depthLabel: "Suv olish nuqtasi\nchuqurlikda joylashgan",
-      depthUnit: "metr",
-      depthMax: 430,
-      depthScale: [0, 85, 170, 250, 340, 400, 430],
-      advantages: [
-        { title: "Artezian manba", text: "Suv 430 m chuqurlikdan himoyalangan gorizontdan olinadi." },
-        { title: "Ultra-yengil minerallashuv", text: "0,2 g/l gacha — kundalik iste'mol uchun ideal." },
-        { title: "Tabiiy muvozanat", text: "Mikroelementlarning optimal tarkibi." },
-        { title: "4 bosqichli tozalash", text: "Zamonaviy texnologiyalar tabiiy xossalarni saqlaydi." },
-      ],
-    },
-    composition: {
-      eyebrow: "✦ Mineral tarkib",
-      title: "Tabiiy\nmuvozanat",
-      text: "MONTIS yengil minerallashuv va kundalik iste'mol uchun maqbul tarkibga ega.",
-      mineralization: "Ultra-yengil minerallashuv",
-      mineralizationValue: "0,2 gacha",
-      mineralizationUnit: "g/l",
-      tableTitle: "Asosiy tarkib, mg/l",
-      items: {
-        ca: { label: "Ca", value: "20—25", desc: "Kalsiy" },
-        mg: { label: "Mg", value: "6—11", desc: "Magniy" },
-        na: { label: "Na", value: "2—7", desc: "Natriy" },
-        hco3: { label: "HCO₃", value: "50—100", desc: "Gidrokarbonatlar" },
-        k:  { label: "K",  value: "0,1—2", desc: "Kaliy" },
-        so4:{ label: "SO₄", value: "1—12", desc: "Sulfatlar" },
-      },
-    },
-    purification: {
-      eyebrow: "✦ Texnologiyalar",
-      title: "4 bosqichli\ntozalash",
-      text: "Zamonaviy filtrlash usullari suvning tabiiy xossalarini saqlaydi va uni mutlaqo xavfsiz qiladi.",
-      steps: [
-        { title: "Filtrlash", desc: "Ko'p qatlamli filtrlar orqali mexanik zarralarni olib tashlash." },
-        { title: "UB-ishlov", desc: "Ultrabinafsha nur bilan bakteriya va viruslarni yo'qotish." },
-        { title: "Ozonlash", desc: "Chuqur dezinfeksiya uchun ozon bilan to'yintirish." },
-        { title: "Osmos", desc: "Molekulyar darajadagi nozik tozalash." },
-      ],
-    },
-    formats: {
-      eyebrow: "✦ Formatlar",
-      title: "Har bir\nformatda qulaylik",
-      text: "MONTIS turli hajmlarda taqdim etiladi, shunda ishonchli suvingiz har doim yoningizda bo'ladi.",
-      stillLabel: "Gazsiz",
-      cards: [
-        { volume: "0,5 l", desc: "Har kun uchun\nideal", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Gazlangan" },
-        { volume: "1 l", desc: "Foyda va\nhajm muvozanati", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Gazlangan" },
-        { volume: "1,5 l", desc: "Chanqoqni\nyengil qondiradi", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Gazlangan" },
-      ],
-    },
-    distributors: {
-      eyebrow: "✦ Qayerdan topish mumkin",
-      title: "MONTIS\nyoningizda",
-      text: "MONTIS-ni supermarketlar, restoranlar va kafelarda, shuningdek mashhur yetkazib berish platformalarida topasiz.",
-      offline: "Do'kon topish",
-      mapTitle: "Sotuv nuqtalari",
-      mapLink: "Xaritani ochish",
-    },
-    cta: { eyebrow: "✦ Muvozanatni saqlash", title: "Tog'lar\nenergiyasini his eting", button: "Yetkazib berishga buyurtma" },
-    footer: {
-      desc: "Tabiiy suvning yangi standarti. Biz sizning sog'lig'ingiz haqida qayg'uramiz.",
-      contacts: "Kontaktlar", nav: "Navigatsiya", brand: "Brend haqida", rights: "Barcha huquqlar himoyalangan.",
-      privacy: "Maxfiylik siyosati", terms: "Foydalanish shartlari",
-    },
-  },
-  en: {
-    nav: { source: "Source", composition: "Composition", purification: "Purification", contact: "Contact" },
-    buy: "Where to buy",
-    hero: { eyebrow: "✦ Relict water", title: "Water shaped\nby nature", subtitle: "100% source of natural energy from the heart of the mountains" },
-    source: {
-      eyebrow: "✦ Uniqueness",
-      title: "Strength\nfrom the depths",
-      text: "We draw water where nothing can touch its composition — from a protected artesian horizon deep beneath the mountain rock.",
-      introLine: "Water is drawn from an underground source",
-      depthLabel: "The intake point\nsits at a depth of",
-      depthUnit: "meters",
-      depthMax: 430,
-      depthScale: [0, 85, 170, 250, 340, 400, 430],
-      advantages: [
-        { title: "Artesian source", text: "Water is drawn from 430 m deep in a protected horizon." },
-        { title: "Ultra-light mineralization", text: "Up to 0.2 g/L — ideal for daily drinking." },
-        { title: "Natural balance", text: "Optimal trace elements with no artificial additives." },
-        { title: "4-stage purification", text: "Modern technology preserves the water's natural properties." },
-      ],
-    },
-    composition: {
-      eyebrow: "✦ Mineral composition",
-      title: "Natural\nbalance",
-      text: "MONTIS has ultra-light mineralization and an optimal amount of trace elements for everyday drinking.",
-      mineralization: "Ultra-light mineralization",
-      mineralizationValue: "up to 0.2",
-      mineralizationUnit: "g/l",
-      tableTitle: "Core composition, mg/l",
-      items: {
-        ca: { label: "Ca", value: "20—25", desc: "Calcium" },
-        mg: { label: "Mg", value: "6—11", desc: "Magnesium" },
-        na: { label: "Na", value: "2—7", desc: "Sodium" },
-        hco3: { label: "HCO₃", value: "50—100", desc: "Bicarbonates" },
-        k:  { label: "K",  value: "0.1—2", desc: "Potassium" },
-        so4:{ label: "SO₄", value: "1—12", desc: "Sulfates" },
-      },
-    },
-    purification: {
-      eyebrow: "✦ Technologies",
-      title: "4 stages\nof purification",
-      text: "Modern filtration preserves the water's natural properties while keeping it absolutely safe.",
-      steps: [
-        { title: "Filtration", desc: "Removal of mechanical impurities through a multi-layer filter system." },
-        { title: "UV treatment", desc: "Ultraviolet light destroys bacteria and viruses." },
-        { title: "Ozonation", desc: "Ozone saturation for deep disinfection and clean taste." },
-        { title: "Osmosis", desc: "Fine purification at the molecular level." },
-      ],
-    },
-    formats: {
-      eyebrow: "✦ Formats",
-      title: "Convenience in\nevery size",
-      text: "MONTIS comes in different bottle sizes, so the water you trust is always with you.",
-      stillLabel: "Still",
-      cards: [
-        { volume: "0.5 L", desc: "Perfect\nfor every day", image: "/media/0,5.png", sparkImage: "/media/gaz-0.5.png", sparkLabel: "Sparkling" },
-        { volume: "1 L", desc: "Balanced\nvolume and benefit", image: "/media/1l.png", sparkImage: "/media/gaz-1l.png", sparkLabel: "Sparkling" },
-        { volume: "1.5 L", desc: "Easily\nquenches thirst", image: "/media/1.5l.png", sparkImage: "/media/gaz-1.5l.png", sparkLabel: "Sparkling" },
-      ],
-    },
-    distributors: {
-      eyebrow: "✦ Where to buy",
-      title: "MONTIS close\nto you",
-      text: "Find MONTIS in supermarkets, restaurants and cafés across the country, as well as on popular delivery platforms.",
-      offline: "Find a store",
-      mapTitle: "Store locations",
-      mapLink: "Open map",
-    },
-    cta: { eyebrow: "✦ Stay balanced", title: "Feel the energy\nof pure mountains", button: "Order delivery" },
-    footer: {
-      desc: "A new standard of natural water. We care about your health by providing a product of the highest quality.",
-      contacts: "Contacts", nav: "Navigation", brand: "About brand", rights: "All rights reserved.",
-      privacy: "Privacy policy", terms: "Terms of use",
-    },
-  },
-} as const;
+import type { Language, SiteContent, TranslationBundle } from "./content/types";
+import { useSiteContent } from "./hooks/useSiteContent";
 
 /* ------------------------------------------------------------------ */
 /* Reusable atoms                                                      */
@@ -437,7 +208,7 @@ const Header = ({
   isLangOpen,
   setIsLangOpen,
 }: {
-  t: typeof translations["en"];
+  t: TranslationBundle;
   lang: Language;
   setLang: (l: Language) => void;
   isLangOpen: boolean;
@@ -526,10 +297,10 @@ const Header = ({
 /* Hero                                                                */
 /* ------------------------------------------------------------------ */
 
-const Hero = ({ t }: { t: typeof translations["en"] }) => {
+const Hero = ({ t }: { t: TranslationBundle }) => {
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoSrc = `${import.meta.env.BASE_URL}media/montis-hero.mp4`;
+  const videoSrc = getPreloadedHeroVideoSrc();
   const posterSrc = `${import.meta.env.BASE_URL}media/mountain-lake-hero.jpg`;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
@@ -539,13 +310,28 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+
     const tryPlay = () => {
-      video.play().catch(() => {});
+      void video.play().catch(() => {});
     };
+
+    const playEvents = ["loadeddata", "canplay", "canplaythrough"] as const;
     tryPlay();
-    video.addEventListener("loadeddata", tryPlay);
-    return () => video.removeEventListener("loadeddata", tryPlay);
-  }, []);
+    for (const event of playEvents) {
+      video.addEventListener(event, tryPlay);
+    }
+
+    return () => {
+      for (const event of playEvents) {
+        video.removeEventListener(event, tryPlay);
+      }
+    };
+  }, [videoSrc]);
 
   return (
     <section
@@ -610,12 +396,8 @@ const Hero = ({ t }: { t: typeof translations["en"] }) => {
 
 const ADVANTAGE_ICONS = [Mountain, Droplets, ShieldCheck, Sparkles] as const;
 const PURIFICATION_ICONS = [Filter, Sun, Wind, Layers] as const;
-const MAP_EMBED_URL =
-  "https://www.openstreetmap.org/export/embed.html?bbox=69.285%2C41.295%2C69.365%2C41.340&layer=mapnik&marker=41.317432%2C69.325962";
-const MAP_EXTERNAL_URL =
-  "https://umap.openstreetmap.de/ru/map/map_124569#14/41.317432/69.325962";
 
-const SecondScreenVideo = ({ t }: { t: typeof translations["en"] }) => {
+const SecondScreenVideo = ({ t }: { t: TranslationBundle }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hasStartedRef = useRef(false);
@@ -864,7 +646,7 @@ const SecondScreenVideo = ({ t }: { t: typeof translations["en"] }) => {
 /* Section Sequence (sticky depth visualization)                       */
 /* ------------------------------------------------------------------ */
 
-const SectionSequence = ({ t }: { t: typeof translations["en"] }) => {
+const SectionSequence = ({ t }: { t: TranslationBundle }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
@@ -904,7 +686,7 @@ const SectionSequence = ({ t }: { t: typeof translations["en"] }) => {
 /* Composition                                                         */
 /* ------------------------------------------------------------------ */
 
-const Composition = ({ t }: { t: typeof translations["en"] }) => {
+const Composition = ({ t }: { t: TranslationBundle }) => {
   const items = [
     { ...t.composition.items.ca, pos: "top-[2%] left-1/2 -translate-x-1/2" },
     { ...t.composition.items.mg, pos: "top-[20%] right-[0%]" },
@@ -978,7 +760,7 @@ const Composition = ({ t }: { t: typeof translations["en"] }) => {
 /* Purification                                                        */
 /* ------------------------------------------------------------------ */
 
-const Purification = ({ t }: { t: typeof translations["en"] }) => {
+const Purification = ({ t }: { t: TranslationBundle }) => {
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
   const stepBackgrounds = ["/media/filtration.png", "/media/uv.png", "/media/ozone.png", "/media/osmos.png"];
 
@@ -1065,7 +847,7 @@ const FormatProductCard = ({
   index,
   stillLabel,
 }: {
-  card: (typeof translations)["ru"]["formats"]["cards"][number];
+  card: TranslationBundle["formats"]["cards"][number];
   index: number;
   stillLabel: string;
 }) => {
@@ -1129,7 +911,7 @@ const FormatProductCard = ({
   );
 };
 
-const Formats = ({ t }: { t: typeof translations["en"] }) => (
+const Formats = ({ t }: { t: TranslationBundle }) => (
   <section id="formats" className="relative py-28 md:py-36 bg-montis-cream overflow-hidden">
     <div className="container mx-auto px-4 sm:px-6 md:px-12">
       <div className="grid md:grid-cols-12 gap-8 md:gap-10 items-end mb-12 md:mb-14">
@@ -1157,13 +939,6 @@ const Formats = ({ t }: { t: typeof translations["en"] }) => (
 /* Distributors – vertical marquees                                    */
 /* ------------------------------------------------------------------ */
 
-const DISTRIBUTORS: string[][] = [
-  ["Korzinka", "Makro", "Havas", "Carrefour", "Anglesey", "Smart Deli"],
-  ["Havas", "OqTepa", "Uzum Market", "Lebhar", "Beeline Cafe", "Yandex Eats"],
-  ["SmartLife", "Valio", "Maroqand", "Texnomart", "Osteria", "Black Bear"],
-  ["Korzinka", "Gorod", "Xiva Cafe", "Miraterra", "Evos", "Baraka"],
-];
-
 const DistributorCell = ({ name }: { name: string }) => (
   <div className="h-24 md:h-32 flex items-center justify-center px-6 border-b border-montis-ink/10">
     <span className="font-serif text-montis-navy text-2xl md:text-3xl whitespace-nowrap tracking-tight">
@@ -1172,7 +947,13 @@ const DistributorCell = ({ name }: { name: string }) => (
   </div>
 );
 
-const Distributors = ({ t }: { t: typeof translations["en"] }) => (
+const Distributors = ({
+  t,
+  settings,
+}: {
+  t: TranslationBundle;
+  settings: SiteContent["settings"];
+}) => (
   <section id="distributors" className="relative py-28 md:py-36 bg-montis-cream overflow-hidden">
     <div className="container mx-auto px-4 sm:px-6 md:px-12 mb-14 md:mb-16">
       <div className="grid md:grid-cols-12 gap-10 items-end">
@@ -1192,7 +973,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
         <Eyebrow className="text-montis-navy">{t.distributors.mapTitle}</Eyebrow>
         <a
-          href={MAP_EXTERNAL_URL}
+          href={settings.mapExternalUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="eyebrow-s text-montis-navy hover:text-montis-blue transition-colors"
@@ -1203,7 +984,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
       <div className="relative aspect-[16/10] md:aspect-[21/9] rounded-3xl overflow-hidden border border-montis-ink/10 bg-white shadow-[0_12px_40px_rgba(15,29,61,0.08)]">
         <iframe
           title={t.distributors.mapTitle}
-          src={MAP_EMBED_URL}
+          src={settings.mapEmbedUrl}
           className="absolute inset-0 h-full w-full border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -1221,7 +1002,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
       }}
     >
       <div className="absolute inset-0 grid grid-cols-2 md:grid-cols-4">
-        {DISTRIBUTORS.map((col, ci) => {
+        {settings.distributorMarquee.map((col, ci) => {
           const track = ci % 2 === 0 ? "marquee-track-up" : "marquee-track-down";
           // Duplicate the list twice to create a seamless loop.
           const items = [...col, ...col];
@@ -1240,7 +1021,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
 
     <div className="container mx-auto px-4 sm:px-6 md:px-12 mt-12 md:mt-14 flex flex-wrap gap-3 sm:gap-4">
       <a
-        href={MAP_EXTERNAL_URL}
+        href={settings.mapExternalUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="group inline-flex min-h-[44px] items-center gap-3 pl-5 sm:pl-6 pr-4 sm:pr-5 py-3 sm:py-4 border border-montis-navy text-montis-navy rounded-full relative overflow-hidden"
@@ -1257,7 +1038,7 @@ const Distributors = ({ t }: { t: typeof translations["en"] }) => (
 /* CTA                                                                 */
 /* ------------------------------------------------------------------ */
 
-const CTA = ({ t }: { t: typeof translations["en"] }) => (
+const CTA = ({ t }: { t: TranslationBundle }) => (
   <section className="relative py-28 md:py-36 bg-montis-blue overflow-hidden">
     <div className="absolute inset-0 opacity-25">
       <img
@@ -1292,7 +1073,13 @@ const CTA = ({ t }: { t: typeof translations["en"] }) => (
 /* Footer                                                              */
 /* ------------------------------------------------------------------ */
 
-const Footer = ({ t }: { t: typeof translations["en"] }) => (
+const Footer = ({
+  t,
+  settings,
+}: {
+  t: TranslationBundle;
+  settings: SiteContent["settings"];
+}) => (
   <footer id="contact" className="relative bg-montis-cream border-t border-montis-ink/10">
     <div className="container mx-auto px-4 sm:px-6 md:px-12 py-16 sm:py-20 md:py-28">
       <div className="grid md:grid-cols-12 gap-10">
@@ -1312,9 +1099,12 @@ const Footer = ({ t }: { t: typeof translations["en"] }) => (
         <div className="md:col-span-3">
           <div className="eyebrow text-montis-ink/60 mb-6">{t.footer.contacts}</div>
           <ul className="space-y-3 text-montis-navy">
-            <li className="flex items-center gap-3"><Phone className="w-4 h-4 text-montis-blue" /> +998(88) 141-09-80</li>
-            <li className="flex items-center gap-3"><Phone className="w-4 h-4 text-montis-blue" /> +998(97) 155-22-66</li>
-            <li className="flex items-center gap-3"><MapPin className="w-4 h-4 text-montis-blue" /> Ташкент, Узбекистан</li>
+            {settings.phones.map((phone) => (
+              <li key={phone} className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-montis-blue" /> {phone}
+              </li>
+            ))}
+            <li className="flex items-center gap-3"><MapPin className="w-4 h-4 text-montis-blue" /> {settings.address}</li>
           </ul>
         </div>
 
@@ -1349,8 +1139,9 @@ export default function App() {
   const [lang, setLang] = useState<Language>("ru");
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { content } = useSiteContent();
 
-  const t = translations[lang];
+  const t = content.translations[lang];
 
   const handlePreloaderDone = useCallback(() => {
     setLoading(false);
@@ -1398,11 +1189,11 @@ export default function App() {
             <Composition t={t} />
             <Purification t={t} />
             <Formats t={t} />
-            <Distributors t={t} />
+            <Distributors t={t} settings={content.settings} />
             <CTA t={t} />
           </main>
 
-          <Footer t={t} />
+          <Footer t={t} settings={content.settings} />
         </>
       )}
     </div>

@@ -6,6 +6,11 @@ const HERO_VIDEO = mediaUrl("media/montis-hero.mp4");
 const HERO_POSTER = mediaUrl("media/mountain-lake-hero.jpg");
 const LOGO_ICON = mediaUrl("media/logo-montis-icon.png");
 
+let heroVideoBlobUrl: string | null = null;
+
+/** Use the blob URL created during preload so hero playback starts instantly. */
+export const getPreloadedHeroVideoSrc = () => heroVideoBlobUrl ?? HERO_VIDEO;
+
 const loadImage = (src: string) =>
   new Promise<void>((resolve) => {
     const img = new Image();
@@ -14,7 +19,45 @@ const loadImage = (src: string) =>
     img.src = src;
   });
 
-const loadHeroVideo = (onProgress: (ratio: number) => void) =>
+const loadHeroVideoWithFetch = async (onProgress: (ratio: number) => void): Promise<boolean> => {
+  try {
+    const response = await fetch(HERO_VIDEO);
+    if (!response.ok) return false;
+
+    const contentLength = Number(response.headers.get("content-length")) || 0;
+    const body = response.body;
+
+    if (!body) {
+      const blob = await response.blob();
+      heroVideoBlobUrl = URL.createObjectURL(blob);
+      onProgress(1);
+      return true;
+    }
+
+    const reader = body.getReader();
+    const chunks: BlobPart[] = [];
+    let received = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (contentLength > 0) {
+        onProgress(Math.min(0.98, received / contentLength));
+      }
+    }
+
+    const blob = new Blob(chunks, { type: "video/mp4" });
+    heroVideoBlobUrl = URL.createObjectURL(blob);
+    onProgress(1);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const loadHeroVideoWithElement = (onProgress: (ratio: number) => void) =>
   new Promise<void>((resolve) => {
     const video = document.createElement("video");
     video.preload = "auto";
@@ -48,6 +91,13 @@ const loadHeroVideo = (onProgress: (ratio: number) => void) =>
     video.load();
   });
 
+const loadHeroVideo = async (onProgress: (ratio: number) => void) => {
+  const fetched = await loadHeroVideoWithFetch(onProgress);
+  if (!fetched) {
+    await loadHeroVideoWithElement(onProgress);
+  }
+};
+
 /** Phase 1: assets required before the preloader can finish. */
 export const preloadCriticalContent = async (onProgress: (percent: number) => void) => {
   onProgress(0);
@@ -71,6 +121,6 @@ export const prefetchSecondaryContent = () => {
   if ("requestIdleCallback" in window) {
     window.requestIdleCallback(run, { timeout: 2500 });
   } else {
-    window.setTimeout(run, 200);
+    setTimeout(run, 200);
   }
 };

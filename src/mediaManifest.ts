@@ -30,6 +30,7 @@ const DEFERRED_MEDIA_HINTS: MediaHint[] = [
   { href: "/media/gaz-1l.png", rel: "prefetch", as: "image" },
   { href: "/media/gaz-1.5l.png", rel: "prefetch", as: "image" },
   { href: "/media/back.png", rel: "prefetch", as: "image" },
+  { href: "/media/black.png", rel: "prefetch", as: "image" },
   {
     href: "https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/depthRangeImg.svg",
     rel: "prefetch",
