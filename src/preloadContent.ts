@@ -5,6 +5,7 @@ const mediaUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^
 const HERO_VIDEO = mediaUrl("media/montis-hero.mp4");
 const HERO_POSTER = mediaUrl("media/mountain-lake-hero.jpg");
 const LOGO_ICON = mediaUrl("media/logo-montis-icon.png");
+const HERO_VIDEO_FETCH_TIMEOUT_MS = 12_000;
 
 let heroVideoBlobUrl: string | null = null;
 
@@ -20,8 +21,11 @@ const loadImage = (src: string) =>
   });
 
 const loadHeroVideoWithFetch = async (onProgress: (ratio: number) => void): Promise<boolean> => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), HERO_VIDEO_FETCH_TIMEOUT_MS);
+
   try {
-    const response = await fetch(HERO_VIDEO);
+    const response = await fetch(HERO_VIDEO, { signal: controller.signal });
     if (!response.ok) return false;
 
     const contentLength = Number(response.headers.get("content-length")) || 0;
@@ -54,6 +58,8 @@ const loadHeroVideoWithFetch = async (onProgress: (ratio: number) => void): Prom
     return true;
   } catch {
     return false;
+  } finally {
+    window.clearTimeout(timeout);
   }
 };
 
