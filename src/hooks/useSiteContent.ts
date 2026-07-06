@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { SiteContent } from "../content/types";
 import { defaultSiteContent } from "../content/defaults";
+import { normalizeSiteContent } from "../content/normalizeSiteContent";
 
 export const useSiteContent = () => {
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
@@ -10,8 +11,8 @@ export const useSiteContent = () => {
     let cancelled = false;
     fetch("/api/content")
       .then((res) => (res.ok ? res.json() : defaultSiteContent))
-      .then((data: SiteContent) => {
-        if (!cancelled) setContent(data);
+      .then((data: unknown) => {
+        if (!cancelled) setContent(normalizeSiteContent(data));
       })
       .catch(() => {
         if (!cancelled) setContent(defaultSiteContent);
