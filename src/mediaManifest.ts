@@ -1,59 +1,60 @@
+import { shouldPrefetch } from "./lib/networkAware";
+
 type HintRel = "preload" | "prefetch";
 type HintAs = "image" | "video" | "audio" | "font" | "fetch";
 
-type MediaHint = {
+export type MediaHint = {
   href: string;
   rel: HintRel;
   as: HintAs;
   type?: string;
   crossOrigin?: "anonymous";
   fetchPriority?: "high" | "low";
+  media?: string;
 };
 
-/** Loaded after hero video is ready — never injected on first paint. */
-const DEFERRED_MEDIA_HINTS: MediaHint[] = [
+/** Second-screen assets — prefetched after hero is ready. */
+const NEAR_FOLD_HINTS: MediaHint[] = [
   { href: "/media/montis-bottle-poster.jpg", rel: "prefetch", as: "image" },
-  { href: "/media/montis-bottle.mp4", rel: "prefetch", as: "video", type: "video/mp4" },
-  { href: "/media/logo-montis.png", rel: "prefetch", as: "image" },
-  { href: "/media/mountain-stream.jpg", rel: "prefetch", as: "image" },
-  { href: "/media/mountain-valley.jpg", rel: "prefetch", as: "image" },
-  { href: "/media/alpine-vista.jpg", rel: "prefetch", as: "image" },
-  { href: "/media/reflective-lake.jpg", rel: "prefetch", as: "image" },
-  { href: "/media/filtration.png", rel: "prefetch", as: "image" },
-  { href: "/media/uv.png", rel: "prefetch", as: "image" },
-  { href: "/media/ozone.png", rel: "prefetch", as: "image" },
-  { href: "/media/osmos.png", rel: "prefetch", as: "image" },
-  { href: "/media/0,5.png", rel: "prefetch", as: "image" },
-  { href: "/media/1l.png", rel: "prefetch", as: "image" },
-  { href: "/media/1.5l.png", rel: "prefetch", as: "image" },
-  { href: "/media/gaz-0.5.png", rel: "prefetch", as: "image" },
-  { href: "/media/gaz-1l.png", rel: "prefetch", as: "image" },
-  { href: "/media/gaz-1.5l.png", rel: "prefetch", as: "image" },
-  { href: "/media/back.png", rel: "prefetch", as: "image" },
-  { href: "/media/black.png", rel: "prefetch", as: "image" },
-  {
-    href: "https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/depthRangeImg.svg",
-    rel: "prefetch",
-    as: "image",
-    crossOrigin: "anonymous",
-  },
-  {
-    href: "https://api.baikal430.ru/storage/photos/shares/images/index/section-sequence/ranges.svg",
-    rel: "prefetch",
-    as: "image",
-    crossOrigin: "anonymous",
-  },
+  { href: "/media/black-480.webp", rel: "prefetch", as: "image" },
+  { href: "/media/black-704.webp", rel: "prefetch", as: "image" },
+  { href: "/media/montis-bottle.mp4", rel: "prefetch", as: "video", type: "video/mp4", media: "(min-width: 768px)" },
 ];
 
-const dedupeToken = (hint: MediaHint) => `${hint.rel}:${hint.as}:${hint.href}`;
+/** Section-specific assets — prefetched when section enters viewport. */
+export const SECTION_HINTS: Record<string, MediaHint[]> = {
+  composition: [
+    { href: "/media/1.5l-640.webp", rel: "prefetch", as: "image" },
+  ],
+  purification: [
+    { href: "/media/filtration-640.webp", rel: "prefetch", as: "image" },
+    { href: "/media/uv-640.webp", rel: "prefetch", as: "image" },
+    { href: "/media/ozone-640.webp", rel: "prefetch", as: "image" },
+    { href: "/media/osmos-640.webp", rel: "prefetch", as: "image" },
+  ],
+  formats: [
+    { href: "/media/0,5-640.webp", rel: "prefetch", as: "image" },
+    { href: "/media/1.5-640.webp", rel: "prefetch", as: "image" },
+    { href: "/media/gaz-0.5.png", rel: "prefetch", as: "image" },
+    { href: "/media/gaz-1l.png", rel: "prefetch", as: "image" },
+    { href: "/media/gaz-1.5l.png", rel: "prefetch", as: "image" },
+  ],
+  cta: [{ href: "/media/back-768.webp", rel: "prefetch", as: "image" }],
+};
+
+const dedupeToken = (hint: MediaHint) =>
+  `${hint.rel}:${hint.as}:${hint.media ?? ""}:${hint.href}`;
 
 const injectHints = (hints: MediaHint[]) => {
+  if (!shouldPrefetch()) return;
+
   const head = document.head;
   if (!head) return;
 
   const existing = new Set(
-    Array.from(head.querySelectorAll("link[rel='preload'], link[rel='prefetch']")).map((node) =>
-      `${node.getAttribute("rel")}:${node.getAttribute("as")}:${node.getAttribute("href")}`,
+    Array.from(head.querySelectorAll("link[rel='preload'], link[rel='prefetch']")).map(
+      (node) =>
+        `${node.getAttribute("rel")}:${node.getAttribute("as")}:${node.getAttribute("media") ?? ""}:${node.getAttribute("href")}`,
     ),
   );
 
@@ -66,6 +67,7 @@ const injectHints = (hints: MediaHint[]) => {
     link.href = hint.href;
     link.as = hint.as;
     if (hint.type) link.type = hint.type;
+    if (hint.media) link.media = hint.media;
     if (hint.crossOrigin) link.crossOrigin = hint.crossOrigin;
     if (hint.fetchPriority) link.fetchPriority = hint.fetchPriority;
     head.appendChild(link);
@@ -73,10 +75,47 @@ const injectHints = (hints: MediaHint[]) => {
   }
 };
 
-let deferredInjected = false;
+let nearFoldInjected = false;
+const injectedSections = new Set<string>();
 
-export const injectDeferredMediaHints = () => {
-  if (deferredInjected) return;
-  deferredInjected = true;
-  injectHints(DEFERRED_MEDIA_HINTS);
+export const injectNearFoldHints = () => {
+  if (nearFoldInjected) return;
+  nearFoldInjected = true;
+  injectHints(NEAR_FOLD_HINTS);
 };
+
+export const injectSectionHints = (sectionId: string) => {
+  if (injectedSections.has(sectionId)) return;
+  const hints = SECTION_HINTS[sectionId];
+  if (!hints) return;
+  injectedSections.add(sectionId);
+  injectHints(hints);
+};
+
+let sectionObserversInitialized = false;
+
+/** Prefetch section assets when they are one viewport away. */
+export const initSectionPrefetch = () => {
+  if (sectionObserversInitialized || !shouldPrefetch()) return;
+  sectionObserversInitialized = true;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const sectionId = entry.target.id;
+        injectSectionHints(sectionId);
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: "100% 0px 100% 0px", threshold: 0 },
+  );
+
+  for (const sectionId of Object.keys(SECTION_HINTS)) {
+    const element = document.getElementById(sectionId);
+    if (element) observer.observe(element);
+  }
+};
+
+/** @deprecated Use injectNearFoldHints — kept for preloadContent compat. */
+export const injectDeferredMediaHints = injectNearFoldHints;

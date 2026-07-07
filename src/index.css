@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -6,22 +5,20 @@
   --font-serif: "Golos Text", ui-sans-serif, system-ui, sans-serif;
 
   --color-montis-navy: #1A2B56;
-  --color-montis-blue: #00AEEF;
+  --color-montis-blue: #2a9fc4;
   --color-montis-red: #ED1C24;
   --color-montis-ink: #213033;
   --color-montis-cream: #f4f1ec;
+  --color-montis-charcoal: #10141c;
 
-  --animate-float: float 6s ease-in-out infinite;
+  --spacing-site-x: clamp(1rem, 4vw, 3rem);
+  --container-site-max: 80rem;
+  --text-hero: clamp(2.5rem, 11vw, 8rem);
+  --text-section: clamp(2rem, 4vw + 0.5rem, 5rem);
+  --text-section-lg: clamp(2.5rem, 5vw + 0.5rem, 7rem);
+
   --animate-marquee-up: marquee-up 40s linear infinite;
   --animate-marquee-down: marquee-down 40s linear infinite;
-  --animate-scroll-arrow: scroll-arrow 2.4s ease-in-out infinite;
-  --animate-arrow-loop: arrow-loop 1.4s ease-in-out infinite;
-  --animate-line-draw: line-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
 }
 
 @keyframes marquee-up {
@@ -47,14 +44,32 @@
   100% { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes line-draw {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    background-color: var(--color-montis-navy);
+  }
+
+  html,
+  body,
+  #root,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
+  }
+
+  *, *::before, *::after {
+    font-family: inherit;
+    font-style: normal;
   }
 
   html,
@@ -69,8 +84,46 @@
   body {
     @apply bg-montis-cream text-montis-ink antialiased overflow-x-hidden;
     font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
     font-optical-sizing: auto;
     font-feature-settings: "ss01", "cv11";
+    min-height: 100dvh;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 180px 180px;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-montis-navy);
+    outline-offset: 3px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100%;
+    z-index: 200;
+    padding: 0.625rem 1rem;
+    border-radius: 9999px;
+    background: var(--color-montis-navy);
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 1rem;
   }
 
   html,
@@ -82,10 +135,58 @@
     background: var(--color-montis-navy);
     color: #fff;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif;
+    font-style: normal;
+  }
 }
 
 @layer utilities {
+  .pt-safe { padding-top: var(--safe-top); }
+  .pb-safe { padding-bottom: var(--safe-bottom); }
+
   .text-balance { text-wrap: balance; }
+
+  /** Fluid site container — 320px to 4K */
+  .site-container {
+    width: 100%;
+    max-width: var(--container-site-max);
+    margin-inline: auto;
+    padding-inline: var(--spacing-site-x);
+  }
+
+  .text-hero-display {
+    font-size: var(--text-hero);
+    line-height: 0.9;
+  }
+
+  @media (max-width: 767px) {
+    .text-hero-display {
+      font-size: clamp(3.25rem, 14.5vw, 5rem);
+    }
+  }
+
+  .text-section-display {
+    font-size: var(--text-section);
+    line-height: 0.95;
+  }
+
+  .text-section-display-lg {
+    font-size: var(--text-section-lg);
+    line-height: 0.95;
+  }
+
+  .font-serif,
+  .font-sans {
+    font-family: "Golos Text", ui-sans-serif, system-ui, sans-serif !important;
+    font-style: normal !important;
+  }
 
   /* All-caps wide-tracked micro-label, as in baikal430 (.all-caps) */
   .eyebrow {
@@ -93,6 +194,7 @@
     font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
+    font-style: normal;
     line-height: 1.2;
   }
   .eyebrow-s {
@@ -100,20 +202,11 @@
     font-weight: 600;
     letter-spacing: 0.28em;
     text-transform: uppercase;
+    font-style: normal;
   }
 
-  /* AnimatedLine – thin underline that draws in from left to right */
-  .animated-line {
-    display: block;
-    height: 1px;
-    width: 100%;
-    transform-origin: left center;
-    transform: scaleX(0);
-    background: currentColor;
-    opacity: 0.35;
-  }
-  .animated-line.in-view {
-    animation: line-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  .btn-press:active {
+    transform: scale(0.98) translateY(1px);
   }
 
   /* Infinite vertical marquee track */
@@ -126,20 +219,14 @@
     will-change: transform;
   }
 
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { scrollbar-width: none; }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
 
   /* Hide header by sliding it off-screen */
   .header-hidden { transform: translateY(-110%); }
-
-  /* Parallax inner wrapper helpers */
-  .parallax-inner {
-    width: 100%;
-    height: 100%;
-    transform: scale(1.08);
-    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .parallax-root:hover .parallax-inner { transform: scale(1.14) translateY(-2%); }
 
   .flip-card-root {
     perspective: 1200px;
@@ -148,6 +235,10 @@
     border: none;
     background: transparent;
     padding: 0;
+    transition: transform 0.2s ease;
+  }
+  .flip-card-root:active {
+    transform: scale(0.985);
   }
   .flip-card-inner {
     position: relative;
@@ -243,9 +334,7 @@
 
   .marquee-track-up,
   .marquee-track-down,
-  .animated-line.in-view,
-  .header-hidden,
-  .parallax-inner {
+  .header-hidden {
     animation: none !important;
     transform: none !important;
   }

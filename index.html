@@ -1,13 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1A2B56" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>MONTIS — Crystal pure artesian water from the mountains</title>
     <meta name="description" content="MONTIS is a new brand of natural artesian drinking water, drawn from a deep spring in the Chirchik river valley." />
-    <!-- Hero video is the only critical media hint on first paint. -->
-    <link rel="preload" href="/media/montis-hero.mp4" as="video" type="video/mp4" fetchpriority="high" />
-    <!-- Preconnect + preload font stylesheet to reduce text render delay. -->
+    <link rel="icon" type="image/png" href="/media/logo-montis-icon.png" />
+    <link rel="apple-touch-icon" href="/media/logo-montis-icon.png" />
+
+    <!-- LCP: hero poster WebP (viewport-aware) + logo -->
+    <link
+      rel="preload"
+      href="/media/mountain-lake-hero-828.webp"
+      as="image"
+      type="image/webp"
+      fetchpriority="high"
+      media="(max-width: 828px)"
+    />
+    <link
+      rel="preload"
+      href="/media/mountain-lake-hero.jpg"
+      as="image"
+      fetchpriority="high"
+      media="(min-width: 829px)"
+    />
+    <link rel="preload" href="/media/logo-montis.png" as="image" />
+    <!-- Hero video: desktop only — mobile loads on demand -->
+    <link
+      rel="preload"
+      href="/media/montis-hero.mp4"
+      as="video"
+      type="video/mp4"
+      fetchpriority="high"
+      media="(min-width: 768px)"
+    />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,6 +49,10 @@
       href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&display=swap"
       rel="stylesheet"
     />
+
+    <meta property="og:title" content="MONTIS — Crystal pure artesian water" />
+    <meta property="og:description" content="Natural artesian drinking water from a deep spring in the Chirchik river valley." />
+    <meta property="og:type" content="website" />
   </head>
   <body>
     <div id="root"></div>

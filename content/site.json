@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updatedAt": "2026-06-25T13:59:30.967Z"
+    "updatedAt": "2026-06-25T14:28:40.203Z"
   },
   "settings": {
     "phones": [
@@ -8,8 +8,10 @@
       "+998(97) 155-22-66"
     ],
     "address": "Ташкент, Узбекистан",
-    "mapEmbedUrl": "https://www.openstreetmap.org/export/embed.html?bbox=69.285%2C41.295%2C69.365%2C41.340&layer=mapnik&marker=41.317432%2C69.325962",
-    "mapExternalUrl": "https://umap.openstreetmap.de/ru/map/map_124569#14/41.317432/69.325962",
+    "mapEmbedUrl": "https://umap.openstreetmap.de/ru/map/map_124569?scaleControl=false&miniMap=false&scrollWheelZoom=false&zoomControl=true&editMode=disabled&moreControl=true&searchControl=null&tilelayersControl=null&embedControl=null&datalayersControl=true&onLoadPanel=none&captionBar=false",
+    "mapExternalUrl": "https://umap.openstreetmap.de/ru/map/map_124569",
+    "instagramUrl": "",
+    "telegramUrl": "",
     "distributorMarquee": [
       [
         "Korzinka",
@@ -45,6 +47,22 @@
       ]
     ]
   },
+  "media": {
+    "heroVideo": "/media/montis-hero.mp4",
+    "heroPoster": "/media/mountain-lake-hero.jpg",
+    "logo": "/media/logo-montis.png",
+    "logoIcon": "/media/logo-montis-icon.png",
+    "sourceVideo": "/media/montis-bottle.mp4",
+    "sourcePoster": "/media/montis-bottle-poster.jpg",
+    "sourceMobileImage": "/media/black.png",
+    "purificationSteps": [
+      "/media/filtration.png",
+      "/media/uv.png",
+      "/media/ozone.png",
+      "/media/osmos.png"
+    ],
+    "ctaBackground": "/media/back.png"
+  },
   "translations": {
     "ru": {
       "nav": {
@@ -64,6 +82,7 @@
         "title": "Сила, добытая\nс глубины",
         "text": "Мы берём воду там, где ничто не влияет на её состав — из защищённого артезианского горизонта под толщей горных пород.",
         "introLine": "Вода добывается из подземного источника",
+        "scrollHint": "листайте вниз",
         "depthLabel": "Точка забора воды\nнаходится на глубине",
         "depthUnit": "метров",
         "depthMax": 430,
@@ -96,43 +115,45 @@
         ]
       },
       "composition": {
-        "eyebrow": "✦ Минеральный состав",
-        "title": "Природный\nбаланс",
-        "text": "MONTIS обладает лёгкой минерализацией и оптимальным содержанием микроэлементов для ежедневного употребления.",
-        "mineralization": "Сверхлёгкая минерализация",
+        "eyebrow": "Минеральный состав",
+        "title": "Природный баланс элементов",
+        "text": "MONTIS обладает лёгкой минерализацией и оптимальным содержанием макроэлементов для ежедневного употребления.",
+        "mineralization": "Слабоминерализованная вода",
+        "mineralizationDesc": "Идеально подходит для приготовления пищи и чая, не меняя вкус продуктов.",
         "mineralizationValue": "до 0,2",
         "mineralizationUnit": "г/л",
-        "tableTitle": "Основной состав, мг/л",
+        "tableTitle": "Общая минерализация",
+        "bottleImage": "/media/1.5l.png",
         "items": {
           "ca": {
             "label": "Ca",
-            "value": "20—25",
-            "desc": "Кальций"
+            "value": "25—50 мг/л",
+            "desc": "Кальций — для здоровья костей и зубов"
           },
           "mg": {
             "label": "Mg",
-            "value": "6—11",
-            "desc": "Магний"
+            "value": "5—25 мг/л",
+            "desc": "Магний — для нервной системы и сердца"
           },
           "na": {
             "label": "Na",
-            "value": "2—7",
-            "desc": "Натрий"
+            "value": "5—20 мг/л",
+            "desc": "Натрий — поддерживает водный баланс"
           },
           "hco3": {
             "label": "HCO₃",
-            "value": "50—100",
-            "desc": "Гидрокарбонаты"
+            "value": "100—250 мг/л",
+            "desc": "Гидрокарбонаты — для пищеварения"
           },
           "k": {
             "label": "K",
-            "value": "0,1—2",
-            "desc": "Калий"
+            "value": "1—5 мг/л",
+            "desc": "Калий — для обмена веществ"
           },
           "so4": {
             "label": "SO₄",
-            "value": "1—12",
-            "desc": "Сульфаты"
+            "value": "5—20 мг/л",
+            "desc": "Сульфаты — способствуют очищению организма"
           }
         }
       },
@@ -229,6 +250,7 @@
         "title": "Chuqurlikdan\nolingan kuch",
         "text": "Biz suvni uning tarkibiga hech narsa ta'sir qilmaydigan joyda — himoyalangan artezian gorizontidan olamiz.",
         "introLine": "Suv yer osti manbasidan olinadi",
+        "scrollHint": "pastga aylantiring",
         "depthLabel": "Suv olish nuqtasi\nchuqurlikda joylashgan",
         "depthUnit": "metr",
         "depthMax": 430,
@@ -261,43 +283,45 @@
         ]
       },
       "composition": {
-        "eyebrow": "✦ Mineral tarkib",
-        "title": "Tabiiy\nmuvozanat",
-        "text": "MONTIS yengil minerallashuv va kundalik iste'mol uchun maqbul tarkibga ega.",
-        "mineralization": "Ultra-yengil minerallashuv",
+        "eyebrow": "Mineral tarkib",
+        "title": "Elementlarning tabiiy muvozanati",
+        "text": "MONTIS yengil minerallashuv va kundalik iste'mol uchun makroelementlarning optimal tarkibiga ega.",
+        "mineralization": "Kam mineralizatsiyalangan suv",
+        "mineralizationDesc": "Ovqat va choy tayyorlash uchun ideal — mahsulotlarning ta'mini o'zgartirmaydi.",
         "mineralizationValue": "0,2 gacha",
         "mineralizationUnit": "g/l",
-        "tableTitle": "Asosiy tarkib, mg/l",
+        "tableTitle": "Umumiy minerallashuv",
+        "bottleImage": "/media/1.5l.png",
         "items": {
           "ca": {
             "label": "Ca",
-            "value": "20—25",
-            "desc": "Kalsiy"
+            "value": "25—50 mg/l",
+            "desc": "Kalsiy — suyak va tishlar salomatligi uchun"
           },
           "mg": {
             "label": "Mg",
-            "value": "6—11",
-            "desc": "Magniy"
+            "value": "5—25 mg/l",
+            "desc": "Magniy — asab tizimi va yurak uchun"
           },
           "na": {
             "label": "Na",
-            "value": "2—7",
-            "desc": "Natriy"
+            "value": "5—20 mg/l",
+            "desc": "Natriy — suv balansini qo'llab-quvvatlaydi"
           },
           "hco3": {
             "label": "HCO₃",
-            "value": "50—100",
-            "desc": "Gidrokarbonatlar"
+            "value": "100—250 mg/l",
+            "desc": "Gidrokarbonatlar — ovqat hazm qilish uchun"
           },
           "k": {
             "label": "K",
-            "value": "0,1—2",
-            "desc": "Kaliy"
+            "value": "1—5 mg/l",
+            "desc": "Kaliy — moddalar almashinuvi uchun"
           },
           "so4": {
             "label": "SO₄",
-            "value": "1—12",
-            "desc": "Sulfatlar"
+            "value": "5—20 mg/l",
+            "desc": "Sulfatlar — organizmni tozalashga yordam beradi"
           }
         }
       },
@@ -394,6 +418,7 @@
         "title": "Strength\nfrom the depths",
         "text": "We draw water where nothing can touch its composition — from a protected artesian horizon deep beneath the mountain rock.",
         "introLine": "Water is drawn from an underground source",
+        "scrollHint": "scroll down",
         "depthLabel": "The intake point\nsits at a depth of",
         "depthUnit": "meters",
         "depthMax": 430,
@@ -426,43 +451,45 @@
         ]
       },
       "composition": {
-        "eyebrow": "✦ Mineral composition",
-        "title": "Natural\nbalance",
-        "text": "MONTIS has ultra-light mineralization and an optimal amount of trace elements for everyday drinking.",
-        "mineralization": "Ultra-light mineralization",
+        "eyebrow": "Mineral composition",
+        "title": "Natural balance of elements",
+        "text": "MONTIS has light mineralization and an optimal amount of macroelements for everyday drinking.",
+        "mineralization": "Low-mineralized water",
+        "mineralizationDesc": "Perfect for cooking and tea without altering the taste of food.",
         "mineralizationValue": "up to 0.2",
         "mineralizationUnit": "g/l",
-        "tableTitle": "Core composition, mg/l",
+        "tableTitle": "Total mineralization",
+        "bottleImage": "/media/1.5l.png",
         "items": {
           "ca": {
             "label": "Ca",
-            "value": "20—25",
-            "desc": "Calcium"
+            "value": "25—50 mg/l",
+            "desc": "Calcium — for bone and dental health"
           },
           "mg": {
             "label": "Mg",
-            "value": "6—11",
-            "desc": "Magnesium"
+            "value": "5—25 mg/l",
+            "desc": "Magnesium — for the nervous system and heart"
           },
           "na": {
             "label": "Na",
-            "value": "2—7",
-            "desc": "Sodium"
+            "value": "5—20 mg/l",
+            "desc": "Sodium — supports water balance"
           },
           "hco3": {
             "label": "HCO₃",
-            "value": "50—100",
-            "desc": "Bicarbonates"
+            "value": "100—250 mg/l",
+            "desc": "Bicarbonates — for digestion"
           },
           "k": {
             "label": "K",
-            "value": "0.1—2",
-            "desc": "Potassium"
+            "value": "1—5 mg/l",
+            "desc": "Potassium — for metabolism"
           },
           "so4": {
             "label": "SO₄",
-            "value": "1—12",
-            "desc": "Sulfates"
+            "value": "5—20 mg/l",
+            "desc": "Sulfates — help cleanse the body"
           }
         }
       },

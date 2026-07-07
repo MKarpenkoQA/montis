@@ -20,6 +20,7 @@ export type TranslationBundle = {
     title: string;
     text: string;
     introLine: string;
+    scrollHint: string;
     depthLabel: string;
     depthUnit: string;
     depthMax: number;
@@ -31,9 +32,11 @@ export type TranslationBundle = {
     title: string;
     text: string;
     mineralization: string;
+    mineralizationDesc: string;
     mineralizationValue: string;
     mineralizationUnit: string;
     tableTitle: string;
+    bottleImage: string;
     items: Record<"ca" | "mg" | "na" | "hco3" | "k" | "so4", MineralItem>;
   };
   purification: {
@@ -74,11 +77,26 @@ export type SiteSettings = {
   address: string;
   mapEmbedUrl: string;
   mapExternalUrl: string;
+  instagramUrl: string;
+  telegramUrl: string;
   distributorMarquee: string[][];
+};
+
+export type SiteMedia = {
+  heroVideo: string;
+  heroPoster: string;
+  logo: string;
+  logoIcon: string;
+  sourceVideo: string;
+  sourcePoster: string;
+  sourceMobileImage: string;
+  purificationSteps: [string, string, string, string];
+  ctaBackground: string;
 };
 
 export type SiteContent = {
   meta: { updatedAt: string };
   settings: SiteSettings;
+  media: SiteMedia;
   translations: Record<Language, TranslationBundle>;
 };

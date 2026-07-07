@@ -1,27 +1,30 @@
-import { injectDeferredMediaHints } from "./mediaManifest";
-
-const mediaUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
-
-const HERO_VIDEO = mediaUrl("media/montis-hero.mp4");
-const HERO_POSTER = mediaUrl("media/mountain-lake-hero.jpg");
-const LOGO_ICON = mediaUrl("media/logo-montis-icon.png");
+import { injectNearFoldHints } from "./mediaManifest";
+import { isDesktopViewport } from "./lib/networkAware";
+import { resolveMediaUrl } from "./lib/mediaUrl";
+import { getOptimalMediaUrl, normalizeMediaPath } from "./lib/responsiveMedia";
+import type { SiteMedia } from "./content/types";
 
 let heroVideoBlobUrl: string | null = null;
 
-/** Use the blob URL created during preload so hero playback starts instantly. */
-export const getPreloadedHeroVideoSrc = () => heroVideoBlobUrl ?? HERO_VIDEO;
+export type PreloadPhase = "idle" | "critical" | "ready";
 
-const loadImage = (src: string) =>
-  new Promise<void>((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = src;
+/** Use the blob URL created during preload so hero playback starts instantly on desktop. */
+export const getPreloadedHeroVideoSrc = (fallback: string): string => heroVideoBlobUrl ?? fallback;
+
+const loadImage = (src: string): Promise<void> =>
+  new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = src;
   });
 
-const loadHeroVideoWithFetch = async (onProgress: (ratio: number) => void): Promise<boolean> => {
+const loadHeroVideoWithFetch = async (
+  heroVideoUrl: string,
+  onProgress: (ratio: number) => void,
+): Promise<boolean> => {
   try {
-    const response = await fetch(HERO_VIDEO);
+    const response = await fetch(heroVideoUrl, { cache: "force-cache" });
     if (!response.ok) return false;
 
     const contentLength = Number(response.headers.get("content-length")) || 0;
@@ -57,8 +60,11 @@ const loadHeroVideoWithFetch = async (onProgress: (ratio: number) => void): Prom
   }
 };
 
-const loadHeroVideoWithElement = (onProgress: (ratio: number) => void) =>
-  new Promise<void>((resolve) => {
+const loadHeroVideoWithElement = (
+  heroVideoUrl: string,
+  onProgress: (ratio: number) => void,
+): Promise<void> =>
+  new Promise((resolve) => {
     const video = document.createElement("video");
     video.preload = "auto";
     video.muted = true;
@@ -86,36 +92,60 @@ const loadHeroVideoWithElement = (onProgress: (ratio: number) => void) =>
     video.addEventListener("error", finish, { once: true });
 
     const timeout = window.setTimeout(finish, 12_000);
-
-    video.src = HERO_VIDEO;
+    video.src = heroVideoUrl;
     video.load();
   });
 
-const loadHeroVideo = async (onProgress: (ratio: number) => void) => {
-  const fetched = await loadHeroVideoWithFetch(onProgress);
+const loadHeroVideo = async (
+  heroVideoUrl: string,
+  onProgress: (ratio: number) => void,
+): Promise<void> => {
+  const fetched = await loadHeroVideoWithFetch(heroVideoUrl, onProgress);
   if (!fetched) {
-    await loadHeroVideoWithElement(onProgress);
+    await loadHeroVideoWithElement(heroVideoUrl, onProgress);
   }
 };
 
-/** Phase 1: assets required before the preloader can finish. */
-export const preloadCriticalContent = async (onProgress: (percent: number) => void) => {
+const getHeroPosterUrl = (poster: string): string => {
+  const posterPath = normalizeMediaPath(poster) ?? "media/mountain-lake-hero.jpg";
+  return typeof window !== "undefined"
+    ? getOptimalMediaUrl(posterPath)
+    : resolveMediaUrl(`${posterPath.replace(/\.[^.]+$/, "")}-828.webp`);
+};
+
+/**
+ * Phase 1: critical above-the-fold assets for the preloader.
+ * Mobile skips full hero video download to save bandwidth.
+ */
+export const preloadCriticalContent = async (
+  media: SiteMedia,
+  onProgress: (percent: number) => void,
+): Promise<void> => {
   onProgress(0);
 
-  await Promise.all([loadImage(LOGO_ICON), loadImage(HERO_POSTER)]);
+  const logoUrl = resolveMediaUrl(media.logo);
+  const posterUrl = getHeroPosterUrl(media.heroPoster);
+  const heroVideoUrl = resolveMediaUrl(media.heroVideo);
+
+  await Promise.all([loadImage(logoUrl), loadImage(posterUrl)]);
   onProgress(8);
 
-  await loadHeroVideo((ratio) => {
-    onProgress(8 + ratio * 92);
-  });
+  if (isDesktopViewport()) {
+    await loadHeroVideo(heroVideoUrl, (ratio) => {
+      onProgress(8 + ratio * 92);
+    });
+  } else {
+    onProgress(100);
+    return;
+  }
 
   onProgress(100);
 };
 
-/** Phase 2: below-the-fold media, fetched after hero is ready. */
-export const prefetchSecondaryContent = () => {
+/** Phase 2: near-fold media via idle callback — does not block main thread. */
+export const prefetchSecondaryContent = (): void => {
   const run = () => {
-    injectDeferredMediaHints();
+    injectNearFoldHints();
   };
 
   if ("requestIdleCallback" in window) {
