@@ -9,25 +9,51 @@ type PreloaderProps = {
   media: SiteMedia;
 };
 
+const PRELOADER_MIN_MS = 4000;
+const PRELOADER_EXIT_MS = 420;
+
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
+
 export const Preloader = ({ onDone, media }: PreloaderProps) => {
   const progress = useMotionValue(0);
   const [display, setDisplay] = useState("00");
 
   useEffect(() => {
     let cancelled = false;
+    let rafId = 0;
+    const start = performance.now();
 
-    void preloadCriticalContent(media, (value: number) => {
+    const tick = (now: number) => {
       if (cancelled) return;
-      const rounded = Math.min(100, Math.floor(value));
+      const elapsed = now - start;
+      const t = Math.min(1, elapsed / PRELOADER_MIN_MS);
+      const value = easeOutCubic(t) * 99;
+      const rounded = Math.floor(value);
       setDisplay(String(rounded).padStart(2, "0"));
       progress.set(value);
-    }).then(() => {
+      if (t < 1) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    void Promise.all([
+      preloadCriticalContent(media, () => {}),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, PRELOADER_MIN_MS);
+      }),
+    ]).then(() => {
       if (cancelled) return;
-      setTimeout(onDone, 420);
+      cancelAnimationFrame(rafId);
+      setDisplay("100");
+      progress.set(100);
+      window.setTimeout(onDone, PRELOADER_EXIT_MS);
     });
 
     return () => {
       cancelled = true;
+      cancelAnimationFrame(rafId);
     };
   }, [media, onDone, progress]);
 
