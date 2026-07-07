@@ -24,7 +24,6 @@ import { scrollToSection } from "./lib/scrollToSection";
 
 export default function App() {
   const [lang, setLang] = useState<Language>("ru");
-  const [isLangOpen, setIsLangOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { content } = useSiteContent();
 
@@ -36,13 +35,6 @@ export default function App() {
     registerServiceWorker();
     initSectionPrefetch();
   }, []);
-
-  useEffect(() => {
-    const closeLanguageMenu = () => setIsLangOpen(false);
-    if (!isLangOpen) return;
-    window.addEventListener("click", closeLanguageMenu);
-    return () => window.removeEventListener("click", closeLanguageMenu);
-  }, [isLangOpen]);
 
   useEffect(() => {
     if (window.location.hash === "#contact") {
@@ -73,8 +65,6 @@ export default function App() {
             t={t}
             lang={lang}
             setLang={setLang}
-            isLangOpen={isLangOpen}
-            setIsLangOpen={setIsLangOpen}
             media={content.media}
           />
 
@@ -88,7 +78,7 @@ export default function App() {
             <CtaSection t={t} media={content.media} />
           </main>
 
-          <Footer t={t} settings={content.settings} />
+          <Footer t={t} settings={content.settings} lang={lang} setLang={setLang} />
         </>
       )}
     </div>

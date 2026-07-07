@@ -1,15 +1,18 @@
 import { Instagram, MapPin, Phone, Send } from "lucide-react";
 import { MontisLogoLink } from "./MontisLogo";
+import { LanguageSwitcher } from "./ui/LanguageSwitcher";
 import { PRIMARY_NAV_ITEMS } from "../constants/navigation";
 import { scrollToSection } from "../lib/scrollToSection";
-import type { SiteContent, TranslationBundle } from "../content/types";
+import type { Language, SiteContent, TranslationBundle } from "../content/types";
 
 type FooterProps = {
   t: TranslationBundle;
   settings: SiteContent["settings"];
+  lang: Language;
+  setLang: (language: Language) => void;
 };
 
-export const Footer = ({ t, settings }: FooterProps) => (
+export const Footer = ({ t, settings, lang, setLang }: FooterProps) => (
   <footer id="contact" className="relative bg-montis-cream border-t border-montis-ink/10 pb-safe">
     <div className="site-container py-16 sm:py-20 md:py-28">
       <div className="grid md:grid-cols-12 gap-10">
@@ -102,6 +105,9 @@ export const Footer = ({ t, settings }: FooterProps) => (
               </button>
             </li>
           </ul>
+          <div className="mt-6">
+            <LanguageSwitcher lang={lang} setLang={setLang} />
+          </div>
         </div>
       </div>
 

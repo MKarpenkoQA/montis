@@ -1,7 +1,6 @@
-import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Globe } from "lucide-react";
 import { MontisLogoLink } from "./MontisLogo";
 import { ArrowPillButton } from "./ui/ArrowPillButton";
+import { LanguageSwitcher } from "./ui/LanguageSwitcher";
 import { PRIMARY_NAV_ITEMS } from "../constants/navigation";
 import { useScrollDirection } from "../hooks/useScrollDirection";
 import type { Language, SiteMedia, TranslationBundle } from "../content/types";
@@ -10,14 +9,10 @@ type HeaderProps = {
   t: TranslationBundle;
   lang: Language;
   setLang: (language: Language) => void;
-  isLangOpen: boolean;
-  setIsLangOpen: (open: boolean) => void;
   media: SiteMedia;
 };
 
-const LANGUAGES: Language[] = ["ru", "uz", "en"];
-
-export const Header = ({ t, lang, setLang, isLangOpen, setIsLangOpen, media }: HeaderProps) => {
+export const Header = ({ t, lang, setLang, media }: HeaderProps) => {
   const hidden = useScrollDirection();
 
   return (
@@ -42,44 +37,7 @@ export const Header = ({ t, lang, setLang, isLangOpen, setIsLangOpen, media }: H
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="relative hidden md:block" onClick={(event) => event.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setIsLangOpen(!isLangOpen)}
-              className="flex items-center gap-2 px-3 py-2 rounded-full border border-montis-ink/15 hover:border-montis-navy/40 transition-colors"
-            >
-              <Globe className="w-3.5 h-3.5 text-montis-navy" />
-              <span className="eyebrow-s">{lang}</span>
-              <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {isLangOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute right-0 mt-2 w-28 bg-montis-cream rounded-xl shadow-xl border border-montis-ink/10 overflow-hidden"
-                >
-                  {LANGUAGES.map((language) => (
-                    <button
-                      key={language}
-                      type="button"
-                      onClick={() => {
-                        setLang(language);
-                        setIsLangOpen(false);
-                      }}
-                      className={`block w-full px-4 py-2 text-left eyebrow-s transition-colors ${
-                        lang === language ? "bg-montis-navy text-white" : "text-montis-ink hover:bg-montis-ink/5"
-                      }`}
-                    >
-                      {language}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <LanguageSwitcher lang={lang} setLang={setLang} className="hidden md:block" />
 
           <ArrowPillButton
             scrollToId="contact"
