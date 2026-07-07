@@ -1,4 +1,4 @@
-const MEDIA_CACHE = "montis-media-v1";
+const MEDIA_CACHE = "montis-media-v2";
 
 const CRITICAL_ASSETS = [
   "/media/montis-hero.mp4",
@@ -72,13 +72,19 @@ self.addEventListener("fetch", (event) => {
 
   if (!isMediaRequest) return;
 
+  if (request.headers.has("range")) {
+    // Browser media elements expect proper 206 responses; cached full bodies cannot
+    // safely satisfy byte-range requests.
+    return;
+  }
+
   // Stale-while-revalidate: instant cache hit + background refresh.
   event.respondWith(
     caches.open(MEDIA_CACHE).then(async (cache) => {
       const cached = await cache.match(request, { ignoreVary: true });
       const networkFetch = fetch(request)
         .then((response) => {
-          if (response.ok) cache.put(request, response.clone());
+          if (response.status === 200) cache.put(request, response.clone());
           return response;
         })
         .catch(() => cached);
