@@ -23,6 +23,15 @@ const mergeMedia = (value: unknown): SiteMedia => {
   };
 };
 
+const mergeSettings = (value: Record<string, unknown>): SiteContent["settings"] => {
+  const settings = value as Partial<SiteContent["settings"]>;
+  return {
+    ...settings,
+    instagramUrl: settings.instagramUrl ?? "",
+    telegramUrl: settings.telegramUrl ?? "",
+  } as SiteContent["settings"];
+};
+
 /** Validate and narrow an untrusted payload to SiteContent. */
 export const parseSiteContent = (value: unknown): SiteContent => {
   if (!isRecord(value)) {
@@ -46,10 +55,6 @@ export const parseSiteContent = (value: unknown): SiteContent => {
   return {
     ...(value as SiteContent),
     media: mergeMedia(value.media),
-    settings: {
-      instagramUrl: "",
-      telegramUrl: "",
-      ...(value.settings as SiteContent["settings"]),
-    },
+    settings: mergeSettings(value.settings),
   };
 };
