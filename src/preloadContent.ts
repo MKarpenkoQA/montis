@@ -5,11 +5,38 @@ import { getOptimalMediaUrl, normalizeMediaPath } from "./lib/responsiveMedia";
 import type { SiteMedia } from "./content/types";
 
 let heroVideoBlobUrl: string | null = null;
+let heroVideoBlobSourceUrl: string | null = null;
+let activeHeroVideoPreloadUrl: string | null = null;
 
 export type PreloadPhase = "idle" | "critical" | "ready";
 
 /** Use the blob URL created during preload so hero playback starts instantly on desktop. */
-export const getPreloadedHeroVideoSrc = (fallback: string): string => heroVideoBlobUrl ?? fallback;
+export const getPreloadedHeroVideoSrc = (fallback: string): string =>
+  heroVideoBlobSourceUrl === fallback && heroVideoBlobUrl ? heroVideoBlobUrl : fallback;
+
+const revokePreloadedHeroVideo = (): void => {
+  if (heroVideoBlobUrl) {
+    URL.revokeObjectURL(heroVideoBlobUrl);
+  }
+  heroVideoBlobUrl = null;
+  heroVideoBlobSourceUrl = null;
+};
+
+const beginHeroVideoPreload = (heroVideoUrl: string): void => {
+  activeHeroVideoPreloadUrl = heroVideoUrl;
+  if (heroVideoBlobSourceUrl !== heroVideoUrl) {
+    revokePreloadedHeroVideo();
+  }
+};
+
+const storePreloadedHeroVideo = (heroVideoUrl: string, blob: Blob): boolean => {
+  if (activeHeroVideoPreloadUrl !== heroVideoUrl) return false;
+
+  revokePreloadedHeroVideo();
+  heroVideoBlobUrl = URL.createObjectURL(blob);
+  heroVideoBlobSourceUrl = heroVideoUrl;
+  return true;
+};
 
 const loadImage = (src: string): Promise<void> =>
   new Promise((resolve) => {
@@ -32,7 +59,7 @@ const loadHeroVideoWithFetch = async (
 
     if (!body) {
       const blob = await response.blob();
-      heroVideoBlobUrl = URL.createObjectURL(blob);
+      if (!storePreloadedHeroVideo(heroVideoUrl, blob)) return true;
       onProgress(1);
       return true;
     }
@@ -52,7 +79,7 @@ const loadHeroVideoWithFetch = async (
     }
 
     const blob = new Blob(chunks, { type: "video/mp4" });
-    heroVideoBlobUrl = URL.createObjectURL(blob);
+    if (!storePreloadedHeroVideo(heroVideoUrl, blob)) return true;
     onProgress(1);
     return true;
   } catch {
@@ -126,6 +153,7 @@ export const preloadCriticalContent = async (
   const logoUrl = resolveMediaUrl(media.logo);
   const posterUrl = getHeroPosterUrl(media.heroPoster);
   const heroVideoUrl = resolveMediaUrl(media.heroVideo);
+  beginHeroVideoPreload(heroVideoUrl);
 
   await Promise.all([loadImage(logoUrl), loadImage(posterUrl)]);
   onProgress(8);
