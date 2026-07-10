@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Language, SiteContent, SiteMedia } from "../content/types";
+import type { Language, SiteContent, SiteMedia, SiteSettings } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
 import { updateTranslation } from "./updateContent";
@@ -61,9 +61,19 @@ export const EditorPage = ({
   };
 
   const updateMedia = (mutate: (media: SiteMedia) => void) => {
-    const next = structuredClone(content);
-    mutate(next.media);
-    setContent(next);
+    setContent((current) => {
+      const next = structuredClone(current);
+      mutate(next.media);
+      return next;
+    });
+  };
+
+  const updateSettings = (mutate: (settings: SiteSettings) => void) => {
+    setContent((current) => {
+      const next = structuredClone(current);
+      mutate(next.settings);
+      return next;
+    });
   };
 
   const sectionContent = useMemo(() => {
@@ -71,50 +81,50 @@ export const EditorPage = ({
       case "Hero":
         return (
           <div className="grid gap-4">
-            <Field label="Eyebrow" value={t.hero.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.hero.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.hero.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.hero.title = v; })} multiline hint="Перенос строки: \n" />
-            <Field label="Подзаголовок" value={t.hero.subtitle} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.hero.subtitle = v; })} multiline />
+            <Field label="Eyebrow" value={t.hero.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.hero.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.hero.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.hero.title = v; })} multiline hint="Перенос строки: \n" />
+            <Field label="Подзаголовок" value={t.hero.subtitle} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.hero.subtitle = v; })} multiline />
           </div>
         );
       case "Источник":
         return (
           <div className="grid gap-4">
-            <Field label="Eyebrow" value={t.source.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.source.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.title = v; })} multiline />
-            <Field label="Текст" value={t.source.text} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.text = v; })} multiline />
-            <Field label="Intro line (desktop)" value={t.source.introLine} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.introLine = v; })} />
-            <Field label="Подпись глубины" value={t.source.depthLabel} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.depthLabel = v; })} multiline />
-            <Field label="Единица глубины" value={t.source.depthUnit} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.source.depthUnit = v; })} />
+            <Field label="Eyebrow" value={t.source.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.source.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.title = v; })} multiline />
+            <Field label="Текст" value={t.source.text} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.text = v; })} multiline />
+            <Field label="Intro line (desktop)" value={t.source.introLine} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.introLine = v; })} />
+            <Field label="Подпись глубины" value={t.source.depthLabel} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.depthLabel = v; })} multiline />
+            <Field label="Единица глубины" value={t.source.depthUnit} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.source.depthUnit = v; })} />
           </div>
         );
       case "Состав":
         return (
           <div className="grid gap-4">
-            <Field label="Eyebrow" value={t.composition.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.composition.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.title = v; })} multiline />
-            <Field label="Текст" value={t.composition.text} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.text = v; })} multiline />
-            <Field label="Минерализация" value={t.composition.mineralization} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.mineralization = v; })} />
-            <Field label="Описание минерализации" value={t.composition.mineralizationDesc} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.mineralizationDesc = v; })} multiline />
-            <Field label="Значение" value={t.composition.mineralizationValue} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.mineralizationValue = v; })} />
+            <Field label="Eyebrow" value={t.composition.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.composition.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.title = v; })} multiline />
+            <Field label="Текст" value={t.composition.text} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.text = v; })} multiline />
+            <Field label="Минерализация" value={t.composition.mineralization} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.mineralization = v; })} />
+            <Field label="Описание минерализации" value={t.composition.mineralizationDesc} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.mineralizationDesc = v; })} multiline />
+            <Field label="Значение" value={t.composition.mineralizationValue} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.mineralizationValue = v; })} />
             <ImageField
               label="Изображение бутылки"
               value={t.composition.bottleImage}
-              onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.composition.bottleImage = v; })}
-              onUpload={(f) => handleUpload((url) => updateTranslation(content, setContent, lang, (b) => { b.composition.bottleImage = url; }), f)}
+              onChange={(v) => updateTranslation(setContent, lang, (b) => { b.composition.bottleImage = v; })}
+              onUpload={(f) => handleUpload((url) => updateTranslation(setContent, lang, (b) => { b.composition.bottleImage = url; }), f)}
             />
           </div>
         );
       case "Очистка":
         return (
           <div className="grid gap-6">
-            <Field label="Eyebrow" value={t.purification.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.purification.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.purification.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.purification.title = v; })} multiline />
-            <Field label="Текст" value={t.purification.text} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.purification.text = v; })} multiline />
+            <Field label="Eyebrow" value={t.purification.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.purification.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.purification.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.purification.title = v; })} multiline />
+            <Field label="Текст" value={t.purification.text} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.purification.text = v; })} multiline />
             {t.purification.steps.map((step, i) => (
               <div key={i} className="rounded-2xl border border-montis-ink/10 p-4 grid gap-3 bg-white/70">
                 <div className="eyebrow-s text-montis-navy">Шаг {i + 1}</div>
-                <Field label="Название" value={step.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.purification.steps[i].title = v; })} />
-                <Field label="Описание" value={step.desc} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.purification.steps[i].desc = v; })} multiline />
+                <Field label="Название" value={step.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.purification.steps[i].title = v; })} />
+                <Field label="Описание" value={step.desc} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.purification.steps[i].desc = v; })} multiline />
               </div>
             ))}
           </div>
@@ -122,16 +132,16 @@ export const EditorPage = ({
       case "Форматы":
         return (
           <div className="grid gap-6">
-            <Field label="Eyebrow" value={t.formats.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.formats.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.title = v; })} multiline />
-            <Field label="Текст" value={t.formats.text} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.text = v; })} multiline />
+            <Field label="Eyebrow" value={t.formats.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.formats.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.title = v; })} multiline />
+            <Field label="Текст" value={t.formats.text} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.text = v; })} multiline />
             {t.formats.cards.map((card, i) => (
               <div key={i} className="rounded-2xl border border-montis-ink/10 p-4 grid gap-3 bg-white/70">
                 <div className="eyebrow-s text-montis-navy">Формат {i + 1}</div>
-                <Field label="Объём" value={card.volume} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].volume = v; })} />
-                <Field label="Описание" value={card.desc} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].desc = v; })} multiline />
-                <ImageField label="Негазированная" value={card.image} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].image = v; })} onUpload={(f) => handleUpload((url) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].image = url; }), f)} />
-                <ImageField label="Газированная" value={card.sparkImage} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].sparkImage = v; })} onUpload={(f) => handleUpload((url) => updateTranslation(content, setContent, lang, (b) => { b.formats.cards[i].sparkImage = url; }), f)} />
+                <Field label="Объём" value={card.volume} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].volume = v; })} />
+                <Field label="Описание" value={card.desc} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].desc = v; })} multiline />
+                <ImageField label="Негазированная" value={card.image} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].image = v; })} onUpload={(f) => handleUpload((url) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].image = url; }), f)} />
+                <ImageField label="Газированная" value={card.sparkImage} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].sparkImage = v; })} onUpload={(f) => handleUpload((url) => updateTranslation(setContent, lang, (b) => { b.formats.cards[i].sparkImage = url; }), f)} />
               </div>
             ))}
           </div>
@@ -139,25 +149,25 @@ export const EditorPage = ({
       case "Где купить":
         return (
           <div className="grid gap-4">
-            <Field label="Eyebrow" value={t.distributors.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.distributors.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.distributors.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.distributors.title = v; })} multiline />
-            <Field label="Текст" value={t.distributors.text} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.distributors.text = v; })} multiline />
-            <Field label="Кнопка" value={t.distributors.offline} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.distributors.offline = v; })} />
+            <Field label="Eyebrow" value={t.distributors.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.distributors.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.distributors.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.distributors.title = v; })} multiline />
+            <Field label="Текст" value={t.distributors.text} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.distributors.text = v; })} multiline />
+            <Field label="Кнопка" value={t.distributors.offline} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.distributors.offline = v; })} />
           </div>
         );
       case "CTA":
         return (
           <div className="grid gap-4">
-            <Field label="Eyebrow" value={t.cta.eyebrow} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.cta.eyebrow = v; })} />
-            <Field label="Заголовок" value={t.cta.title} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.cta.title = v; })} multiline />
-            <Field label="Кнопка" value={t.cta.button} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.cta.button = v; })} />
+            <Field label="Eyebrow" value={t.cta.eyebrow} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.cta.eyebrow = v; })} />
+            <Field label="Заголовок" value={t.cta.title} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.cta.title = v; })} multiline />
+            <Field label="Кнопка" value={t.cta.button} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.cta.button = v; })} />
           </div>
         );
       case "Футер":
         return (
           <div className="grid gap-4">
-            <Field label="Описание" value={t.footer.desc} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.footer.desc = v; })} multiline />
-            <Field label="Кнопка «Где купить»" value={t.buy} onChange={(v) => updateTranslation(content, setContent, lang, (b) => { b.buy = v; })} />
+            <Field label="Описание" value={t.footer.desc} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.footer.desc = v; })} multiline />
+            <Field label="Кнопка «Где купить»" value={t.buy} onChange={(v) => updateTranslation(setContent, lang, (b) => { b.buy = v; })} />
           </div>
         );
       case "Медиа":
@@ -243,13 +253,13 @@ export const EditorPage = ({
       case "Настройки":
         return (
           <div className="grid gap-4">
-            <Field label="Телефон 1" value={content.settings.phones[0] ?? ""} onChange={(v) => setContent({ ...content, settings: { ...content.settings, phones: [v, content.settings.phones[1] ?? ""] } })} />
-            <Field label="Телефон 2" value={content.settings.phones[1] ?? ""} onChange={(v) => setContent({ ...content, settings: { ...content.settings, phones: [content.settings.phones[0] ?? "", v] } })} />
-            <Field label="Адрес" value={content.settings.address} onChange={(v) => setContent({ ...content, settings: { ...content.settings, address: v } })} />
-            <Field label="Карта embed URL" value={content.settings.mapEmbedUrl} onChange={(v) => setContent({ ...content, settings: { ...content.settings, mapEmbedUrl: v } })} multiline />
-            <Field label="Карта external URL" value={content.settings.mapExternalUrl} onChange={(v) => setContent({ ...content, settings: { ...content.settings, mapExternalUrl: v } })} multiline />
-            <Field label="Instagram URL" value={content.settings.instagramUrl ?? ""} onChange={(v) => setContent({ ...content, settings: { ...content.settings, instagramUrl: v } })} hint="Пустое поле — иконка неактивна" />
-            <Field label="Telegram URL" value={content.settings.telegramUrl ?? ""} onChange={(v) => setContent({ ...content, settings: { ...content.settings, telegramUrl: v } })} hint="Пустое поле — иконка неактивна" />
+            <Field label="Телефон 1" value={content.settings.phones[0] ?? ""} onChange={(v) => updateSettings((s) => { s.phones = [v, s.phones[1] ?? ""]; })} />
+            <Field label="Телефон 2" value={content.settings.phones[1] ?? ""} onChange={(v) => updateSettings((s) => { s.phones = [s.phones[0] ?? "", v]; })} />
+            <Field label="Адрес" value={content.settings.address} onChange={(v) => updateSettings((s) => { s.address = v; })} />
+            <Field label="Карта embed URL" value={content.settings.mapEmbedUrl} onChange={(v) => updateSettings((s) => { s.mapEmbedUrl = v; })} multiline />
+            <Field label="Карта external URL" value={content.settings.mapExternalUrl} onChange={(v) => updateSettings((s) => { s.mapExternalUrl = v; })} multiline />
+            <Field label="Instagram URL" value={content.settings.instagramUrl ?? ""} onChange={(v) => updateSettings((s) => { s.instagramUrl = v; })} hint="Пустое поле — иконка неактивна" />
+            <Field label="Telegram URL" value={content.settings.telegramUrl ?? ""} onChange={(v) => updateSettings((s) => { s.telegramUrl = v; })} hint="Пустое поле — иконка неактивна" />
           </div>
         );
       default:
