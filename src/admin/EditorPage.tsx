@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Language, SiteContent, SiteMedia } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
@@ -37,6 +37,10 @@ export const EditorPage = ({
   const [section, setSection] = useState<Section>("Hero");
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
 
   const t = content.translations[lang];
 
