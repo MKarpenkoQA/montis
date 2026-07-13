@@ -50,7 +50,7 @@ export const ImageField = ({ label, value, onChange, onUpload }: ImageFieldProps
         Загрузить
         <input
           type="file"
-          accept="image/*,video/mp4,video/webm"
+          accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];

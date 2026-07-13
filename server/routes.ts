@@ -27,7 +27,7 @@ const upload = multer({
   }),
   limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = /\.(png|jpe?g|webp|gif|svg|mp4|webm)$/i.test(file.originalname);
+    const allowed = /\.(png|jpe?g|webp|gif|mp4|webm)$/i.test(file.originalname);
     cb(null, allowed);
   },
 });
