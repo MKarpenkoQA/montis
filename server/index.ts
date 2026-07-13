@@ -22,7 +22,18 @@ app.use(cookieParser());
 app.use(express.json({ limit: "4mb" }));
 
 await ensureUploadsDir();
-app.use("/media/uploads", express.static(path.join(ROOT, "public/media/uploads")));
+app.use(
+  "/media/uploads",
+  express.static(path.join(ROOT, "public/media/uploads"), {
+    setHeaders: (res, filePath) => {
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      if (path.extname(filePath).toLowerCase() === ".svg") {
+        res.setHeader("Content-Disposition", "attachment");
+        res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; script-src 'none'");
+      }
+    },
+  }),
+);
 app.use("/media", express.static(path.join(ROOT, "public/media")));
 app.use("/api", createApiRouter());
 
