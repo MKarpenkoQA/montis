@@ -11,6 +11,7 @@ import {
   SESSION_COOKIE_NAME,
   setSessionCookie,
 } from "./auth.js";
+import { ContentConflictError } from "./contentRevision.js";
 import { ensureUploadsDir, readSiteContent, UPLOADS_DIR, writeSiteContent } from "./contentStore.js";
 
 const upload = multer({
@@ -73,9 +74,13 @@ export const createApiRouter = () => {
 
   router.put("/content", requireAuth, async (req, res) => {
     try {
-      const saved = await writeSiteContent(req.body);
+      const saved = await writeSiteContent(req.body, { requireCurrentRevision: true });
       res.json(saved);
-    } catch {
+    } catch (error) {
+      if (error instanceof ContentConflictError) {
+        res.status(409).json({ error: error.message });
+        return;
+      }
       res.status(400).json({ error: "Invalid content payload" });
     }
   });
