@@ -6,13 +6,23 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 const sessions = new Map<string, number>();
 
 const DEFAULT_ADMIN_PASSWORD = "montis-admin";
+const EXAMPLE_ADMIN_PASSWORD = "change-me-in-production";
+const INSECURE_ADMIN_PASSWORDS = new Set([
+  DEFAULT_ADMIN_PASSWORD,
+  EXAMPLE_ADMIN_PASSWORD,
+]);
 
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
 
+export const isSecureAdminPassword = (password: string): boolean => {
+  const normalized = password.trim();
+  return normalized.length > 0 && !INSECURE_ADMIN_PASSWORDS.has(normalized);
+};
+
 export const assertSecureAdminPassword = (): void => {
   if (process.env.NODE_ENV !== "production") return;
-  if (ADMIN_PASSWORD === DEFAULT_ADMIN_PASSWORD) {
-    console.error("FATAL: Set ADMIN_PASSWORD before running in production.");
+  if (!isSecureAdminPassword(ADMIN_PASSWORD)) {
+    console.error("FATAL: Set ADMIN_PASSWORD to a private non-empty value before running in production.");
     process.exit(1);
   }
 };

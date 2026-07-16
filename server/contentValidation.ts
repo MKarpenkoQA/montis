@@ -43,13 +43,15 @@ export const parseSiteContent = (value: unknown): SiteContent => {
     }
   }
 
+  const settings = value.settings as SiteContent["settings"];
+
   return {
     ...(value as SiteContent),
     media: mergeMedia(value.media),
     settings: {
-      instagramUrl: "",
-      telegramUrl: "",
-      ...(value.settings as SiteContent["settings"]),
+      ...settings,
+      instagramUrl: typeof settings.instagramUrl === "string" ? settings.instagramUrl : "",
+      telegramUrl: typeof settings.telegramUrl === "string" ? settings.telegramUrl : "",
     },
   };
 };
