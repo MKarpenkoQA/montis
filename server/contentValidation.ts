@@ -43,7 +43,7 @@ export const parseSiteContent = (value: unknown): SiteContent => {
     }
   }
 
-  const settings = value.settings as Partial<SiteContent["settings"]>;
+  const settings = value.settings as SiteContent["settings"];
 
   return {
     ...(value as SiteContent),
