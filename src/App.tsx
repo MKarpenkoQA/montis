@@ -25,6 +25,9 @@ import { scrollToSection } from "./lib/scrollToSection";
 export default function App() {
   const [lang, setLang] = useState<Language>("ru");
   const [loading, setLoading] = useState(true);
+  const [pendingHashScroll, setPendingHashScroll] = useState(() =>
+    window.location.hash ? window.location.hash.slice(1) : null,
+  );
   const { content } = useSiteContent();
 
   const t = content.translations[lang];
@@ -37,10 +40,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (window.location.hash === "#contact") {
-      scrollToSection("contact");
+    if (!loading && pendingHashScroll && scrollToSection(pendingHashScroll)) {
+      setPendingHashScroll(null);
     }
-  }, []);
+  }, [loading, pendingHashScroll]);
 
   useEffect(() => {
     document.body.style.overflow = loading ? "hidden" : "";
