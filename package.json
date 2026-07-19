@@ -10,6 +10,7 @@
     "start": "NODE_ENV=production tsx server/index.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist",
+    "test": "node --test --import tsx server/contentValidation.test.ts",
     "lint": "tsc --noEmit",
     "generate:images": "node scripts/generate-responsive-images.mjs"
   },
