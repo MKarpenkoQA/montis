@@ -20,10 +20,12 @@ const requireString = (value: unknown, path: string): void => {
   }
 };
 
-const requireOptionalString = (value: unknown, path: string): void => {
+const parseOptionalString = (value: unknown, path: string): string | undefined => {
   if (value !== undefined && typeof value !== "string") {
     throw new Error(`Invalid ${path}`);
   }
+
+  return value;
 };
 
 const requireNumber = (value: unknown, path: string): void => {
@@ -88,8 +90,8 @@ const parseSettings = (value: unknown): SiteSettings => {
   const settings = requireRecord(value, "settings");
   requireStringFields(settings, "settings", ["address", "mapEmbedUrl", "mapExternalUrl"]);
   requireStringArray(settings.phones, "settings.phones");
-  requireOptionalString(settings.instagramUrl, "settings.instagramUrl");
-  requireOptionalString(settings.telegramUrl, "settings.telegramUrl");
+  const instagramUrl = parseOptionalString(settings.instagramUrl, "settings.instagramUrl");
+  const telegramUrl = parseOptionalString(settings.telegramUrl, "settings.telegramUrl");
 
   if (!Array.isArray(settings.distributorMarquee)) {
     throw new Error("Missing settings.distributorMarquee");
@@ -100,8 +102,8 @@ const parseSettings = (value: unknown): SiteSettings => {
 
   return {
     ...(settings as SiteSettings),
-    instagramUrl: settings.instagramUrl ?? "",
-    telegramUrl: settings.telegramUrl ?? "",
+    instagramUrl: instagramUrl ?? "",
+    telegramUrl: telegramUrl ?? "",
   };
 };
 
