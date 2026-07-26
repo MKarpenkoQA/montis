@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { Language, SiteContent, SiteMedia } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
@@ -32,7 +32,8 @@ export const EditorPage = ({
   initialContent: SiteContent;
   onReload: () => void;
 }) => {
-  const [content, setContent] = useState(initialContent);
+  const [content, setRawContent] = useState(initialContent);
+  const editVersionRef = useRef(0);
   const [lang, setLang] = useState<Language>("ru");
   const [section, setSection] = useState<Section>("Hero");
   const [status, setStatus] = useState<string | null>(null);
@@ -40,13 +41,24 @@ export const EditorPage = ({
 
   const t = content.translations[lang];
 
+  const setContent = useCallback((value: SiteContent) => {
+    editVersionRef.current += 1;
+    setRawContent(value);
+  }, []);
+
   const handleSave = async () => {
+    const saveVersion = editVersionRef.current;
     setSaving(true);
     setStatus(null);
     try {
       const saved = await saveContent(content);
-      setContent(saved);
-      setStatus("Сохранено");
+      if (editVersionRef.current === saveVersion) {
+        setRawContent(saved);
+        setStatus("Сохранено");
+      } else {
+        setRawContent((current) => ({ ...current, meta: saved.meta }));
+        setStatus("Сохранено. Новые правки не отправлены");
+      }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Ошибка сохранения");
     } finally {
