@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Language, SiteContent, SiteMedia } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
@@ -37,10 +37,17 @@ export const EditorPage = ({
   const [section, setSection] = useState<Section>("Hero");
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState(0);
+  const pendingUploadsRef = useRef(0);
 
   const t = content.translations[lang];
+  const hasPendingUploads = pendingUploads > 0;
 
   const handleSave = async () => {
+    if (pendingUploadsRef.current > 0) {
+      setStatus("Дождитесь окончания загрузки файла");
+      return;
+    }
     setSaving(true);
     setStatus(null);
     try {
@@ -55,9 +62,19 @@ export const EditorPage = ({
   };
 
   const handleUpload = async (onApply: (url: string) => void, file: File) => {
-    const { url } = await uploadFile(file);
-    onApply(url);
-    setStatus(`Файл загружен: ${url}`);
+    pendingUploadsRef.current += 1;
+    setPendingUploads(pendingUploadsRef.current);
+    setStatus("Загрузка файла...");
+    try {
+      const { url } = await uploadFile(file);
+      onApply(url);
+      setStatus(`Файл загружен: ${url}`);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Ошибка загрузки файла");
+    } finally {
+      pendingUploadsRef.current = Math.max(0, pendingUploadsRef.current - 1);
+      setPendingUploads(pendingUploadsRef.current);
+    }
   };
 
   const updateMedia = (mutate: (media: SiteMedia) => void) => {
@@ -282,10 +299,10 @@ export const EditorPage = ({
             <button
               type="button"
               onClick={() => void handleSave()}
-              disabled={saving}
+              disabled={saving || hasPendingUploads}
               className="rounded-full bg-montis-navy text-white px-5 py-2 eyebrow-s disabled:opacity-60"
             >
-              {saving ? "Сохранение..." : "Сохранить"}
+              {saving ? "Сохранение..." : hasPendingUploads ? "Загрузка..." : "Сохранить"}
             </button>
           </div>
         </div>
