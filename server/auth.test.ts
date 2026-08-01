@@ -17,7 +17,9 @@ test("failed login attempts are locked after repeated failures and clear on rese
   }
 
   const retryAfterMs = recordFailedLoginAttempt(key);
-  assert.equal(typeof retryAfterMs, "number");
+  if (retryAfterMs === null) {
+    assert.fail("expected lockout after repeated failures");
+  }
   assert.ok(retryAfterMs > 0);
   assert.ok(getLoginRetryAfterMs(key)! > 0);
 
