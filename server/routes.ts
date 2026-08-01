@@ -1,12 +1,16 @@
 import { Router } from "express";
+import type { Request, Response } from "express";
 import multer from "multer";
 import path from "node:path";
 import {
   ADMIN_PASSWORD,
+  clearLoginAttempts,
   clearSessionCookie,
   createSession,
   destroySession,
+  getLoginRetryAfterMs,
   isValidSession,
+  recordFailedLoginAttempt,
   requireAuth,
   SESSION_COOKIE_NAME,
   setSessionCookie,
@@ -32,6 +36,13 @@ const upload = multer({
   },
 });
 
+const getLoginAttemptKey = (req: Request) => req.ip || req.socket.remoteAddress || "unknown";
+
+const sendLoginRateLimit = (res: Response, retryAfterMs: number) => {
+  res.set("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
+  res.status(429).json({ error: "Too many failed login attempts. Try again later." });
+};
+
 export const createApiRouter = () => {
   const router = Router();
 
@@ -51,11 +62,24 @@ export const createApiRouter = () => {
 
   router.post("/auth/login", (req, res) => {
     try {
+      const loginAttemptKey = getLoginAttemptKey(req);
+      const activeRetryAfterMs = getLoginRetryAfterMs(loginAttemptKey);
+      if (activeRetryAfterMs !== null) {
+        sendLoginRateLimit(res, activeRetryAfterMs);
+        return;
+      }
+
       const password = String(req.body?.password ?? "");
       if (password !== ADMIN_PASSWORD) {
+        const retryAfterMs = recordFailedLoginAttempt(loginAttemptKey);
+        if (retryAfterMs !== null) {
+          sendLoginRateLimit(res, retryAfterMs);
+          return;
+        }
         res.status(401).json({ error: "Invalid password" });
         return;
       }
+      clearLoginAttempts(loginAttemptKey);
       const token = createSession();
       setSessionCookie(res, token);
       res.json({ ok: true });

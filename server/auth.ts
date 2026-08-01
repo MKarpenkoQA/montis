@@ -6,6 +6,17 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 const sessions = new Map<string, number>();
 
 const DEFAULT_ADMIN_PASSWORD = "montis-admin";
+const LOGIN_ATTEMPT_WINDOW_MS = 1000 * 60 * 15;
+const LOGIN_ATTEMPT_LIMIT = 5;
+const LOGIN_LOCK_MS = 1000 * 60 * 15;
+
+type LoginAttemptState = {
+  failedAttempts: number;
+  firstFailedAt: number;
+  lockedUntil: number;
+};
+
+const loginAttempts = new Map<string, LoginAttemptState>();
 
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
 
@@ -22,6 +33,44 @@ const purgeExpiredSessions = () => {
   for (const [token, expiresAt] of sessions) {
     if (expiresAt <= now) sessions.delete(token);
   }
+};
+
+const purgeExpiredLoginAttempts = () => {
+  const now = Date.now();
+  for (const [key, attempt] of loginAttempts) {
+    if (attempt.lockedUntil > now) continue;
+    if (now - attempt.firstFailedAt <= LOGIN_ATTEMPT_WINDOW_MS) continue;
+    loginAttempts.delete(key);
+  }
+};
+
+export const getLoginRetryAfterMs = (key: string): number | null => {
+  purgeExpiredLoginAttempts();
+  const attempt = loginAttempts.get(key);
+  if (!attempt || attempt.lockedUntil <= Date.now()) return null;
+  return attempt.lockedUntil - Date.now();
+};
+
+export const recordFailedLoginAttempt = (key: string): number | null => {
+  purgeExpiredLoginAttempts();
+  const now = Date.now();
+  const current = loginAttempts.get(key);
+  const attempt =
+    current && now - current.firstFailedAt <= LOGIN_ATTEMPT_WINDOW_MS
+      ? current
+      : { failedAttempts: 0, firstFailedAt: now, lockedUntil: 0 };
+
+  attempt.failedAttempts += 1;
+  if (attempt.failedAttempts >= LOGIN_ATTEMPT_LIMIT) {
+    attempt.lockedUntil = now + LOGIN_LOCK_MS;
+  }
+  loginAttempts.set(key, attempt);
+
+  return attempt.lockedUntil > now ? attempt.lockedUntil - now : null;
+};
+
+export const clearLoginAttempts = (key: string) => {
+  loginAttempts.delete(key);
 };
 
 export const createSession = () => {
