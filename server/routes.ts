@@ -39,9 +39,13 @@ export const createApiRouter = () => {
     res.json({ ok: true });
   });
 
-  router.get("/content", async (_req, res) => {
-    const content = await readSiteContent();
-    res.json(content);
+  router.get("/content", async (_req, res, next) => {
+    try {
+      const content = await readSiteContent();
+      res.json(content);
+    } catch (error) {
+      next(error);
+    }
   });
 
   router.get("/auth/me", (req, res) => {
