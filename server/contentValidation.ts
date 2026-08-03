@@ -1,5 +1,5 @@
 import type { Language, SiteContent, SiteMedia } from "../src/content/types.js";
-import { defaultSiteMedia } from "../src/content/defaults.js";
+import { defaultSiteMedia } from "../src/content/mediaDefaults.js";
 
 const LANGUAGES: Language[] = ["ru", "uz", "en"];
 

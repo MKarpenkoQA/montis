@@ -9,23 +9,22 @@ const ROOT = path.resolve(__dirname, "..");
 export const CONTENT_PATH = path.join(ROOT, "content/site.json");
 export const UPLOADS_DIR = path.join(ROOT, "public/media/uploads");
 
-let defaultContent: SiteContent | null = null;
+let lastKnownContent: SiteContent | null = null;
 
-const loadDefaultContent = async (): Promise<SiteContent> => {
-  if (defaultContent) return defaultContent;
-  const raw = await fs.readFile(CONTENT_PATH, "utf8");
-  defaultContent = JSON.parse(raw) as SiteContent;
-  return defaultContent;
-};
+const cloneSiteContent = (content: SiteContent): SiteContent =>
+  structuredClone(content);
 
 export const readSiteContent = async (): Promise<SiteContent> => {
   try {
     const raw = await fs.readFile(CONTENT_PATH, "utf8");
-    return parseSiteContent(JSON.parse(raw));
+    const content = parseSiteContent(JSON.parse(raw));
+    lastKnownContent = cloneSiteContent(content);
+    return content;
   } catch {
-    const fallback = await loadDefaultContent();
-    await writeSiteContent(fallback);
-    return fallback;
+    if (lastKnownContent) {
+      return cloneSiteContent(lastKnownContent);
+    }
+    throw new Error("Unable to read site content");
   }
 };
 
@@ -37,6 +36,7 @@ export const writeSiteContent = async (content: unknown): Promise<SiteContent> =
     meta: { updatedAt: new Date().toISOString() },
   };
   await fs.writeFile(CONTENT_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  lastKnownContent = cloneSiteContent(payload);
   return payload;
 };
 
