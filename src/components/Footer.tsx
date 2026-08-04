@@ -106,7 +106,7 @@ export const Footer = ({ t, settings, lang, setLang }: FooterProps) => (
             </li>
           </ul>
           <div className="mt-6">
-            <LanguageSwitcher lang={lang} setLang={setLang} />
+            <LanguageSwitcher lang={lang} setLang={setLang} dropUp />
           </div>
         </div>
       </div>
