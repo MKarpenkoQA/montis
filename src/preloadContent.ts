@@ -5,11 +5,26 @@ import { getOptimalMediaUrl, normalizeMediaPath } from "./lib/responsiveMedia";
 import type { SiteMedia } from "./content/types";
 
 let heroVideoBlobUrl: string | null = null;
+let heroVideoBlobType: string | undefined;
 
 export type PreloadPhase = "idle" | "critical" | "ready";
 
 /** Use the blob URL created during preload so hero playback starts instantly on desktop. */
 export const getPreloadedHeroVideoSrc = (fallback: string): string => heroVideoBlobUrl ?? fallback;
+export const getPreloadedHeroVideoType = (fallback: string): string | undefined =>
+  heroVideoBlobUrl ? heroVideoBlobType ?? getVideoMimeType(fallback) : getVideoMimeType(fallback);
+
+const getVideoMimeTypeFromHeader = (contentType: string | null): string | undefined => {
+  const mime = contentType?.split(";")[0]?.trim().toLowerCase();
+  return mime?.startsWith("video/") ? mime : undefined;
+};
+
+export const getVideoMimeType = (src: string): string | undefined => {
+  const path = src.split(/[?#]/)[0]?.toLowerCase();
+  if (path.endsWith(".webm")) return "video/webm";
+  if (path.endsWith(".mp4")) return "video/mp4";
+  return undefined;
+};
 
 const loadImage = (src: string): Promise<void> =>
   new Promise((resolve) => {
@@ -27,11 +42,13 @@ const loadHeroVideoWithFetch = async (
     const response = await fetch(heroVideoUrl, { cache: "force-cache" });
     if (!response.ok) return false;
 
+    const responseType = getVideoMimeTypeFromHeader(response.headers.get("content-type")) ?? getVideoMimeType(heroVideoUrl);
     const contentLength = Number(response.headers.get("content-length")) || 0;
     const body = response.body;
 
     if (!body) {
       const blob = await response.blob();
+      heroVideoBlobType = getVideoMimeTypeFromHeader(blob.type) ?? responseType;
       heroVideoBlobUrl = URL.createObjectURL(blob);
       onProgress(1);
       return true;
@@ -51,7 +68,8 @@ const loadHeroVideoWithFetch = async (
       }
     }
 
-    const blob = new Blob(chunks, { type: "video/mp4" });
+    const blob = new Blob(chunks, responseType ? { type: responseType } : undefined);
+    heroVideoBlobType = blob.type || responseType;
     heroVideoBlobUrl = URL.createObjectURL(blob);
     onProgress(1);
     return true;
