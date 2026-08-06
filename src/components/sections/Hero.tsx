@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { RevealLines } from "../ui/RevealLines";
-import { getPreloadedHeroVideoSrc } from "../../preloadContent";
+import { getPreloadedHeroVideoSrc, getPreloadedHeroVideoType } from "../../preloadContent";
 import { useMutedAutoplayVideo } from "../../hooks/useMutedAutoplayVideo";
 import { isDesktopViewport } from "../../lib/networkAware";
 import { getOptimalMediaUrl, normalizeMediaPath } from "../../lib/responsiveMedia";
@@ -16,7 +16,9 @@ type HeroProps = {
 export const Hero = ({ t, media }: HeroProps) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const videoSrc = getPreloadedHeroVideoSrc(resolveMediaUrl(media.heroVideo));
+  const heroVideoUrl = resolveMediaUrl(media.heroVideo);
+  const videoSrc = getPreloadedHeroVideoSrc(heroVideoUrl);
+  const videoType = getPreloadedHeroVideoType(heroVideoUrl);
   const posterPath = normalizeMediaPath(media.heroPoster) ?? "media/mountain-lake-hero.jpg";
   const posterSrc =
     typeof window !== "undefined"
@@ -49,7 +51,7 @@ export const Hero = ({ t, media }: HeroProps) => {
           height={1080}
           aria-hidden
         >
-          <source src={videoSrc} type="video/mp4" />
+          <source src={videoSrc} type={videoType} />
         </video>
         <motion.div
           style={{ opacity: overlay }}
