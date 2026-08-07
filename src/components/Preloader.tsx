@@ -21,6 +21,7 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
   useEffect(() => {
     let cancelled = false;
     let rafId = 0;
+    let exitTimeoutId: number | undefined;
     const start = performance.now();
 
     const tick = (now: number) => {
@@ -48,12 +49,15 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
       cancelAnimationFrame(rafId);
       setDisplay("100");
       progress.set(100);
-      window.setTimeout(onDone, PRELOADER_EXIT_MS);
+      exitTimeoutId = window.setTimeout(onDone, PRELOADER_EXIT_MS);
     });
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
+      if (exitTimeoutId !== undefined) {
+        window.clearTimeout(exitTimeoutId);
+      }
     };
   }, [media, onDone, progress]);
 
