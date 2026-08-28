@@ -2,11 +2,12 @@ import { motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useState } from "react";
 import { MontisLogo } from "./MontisLogo";
 import { preloadCriticalContent } from "../preloadContent";
+import { defaultSiteMedia } from "../content/defaults";
 import type { SiteMedia } from "../content/types";
 
 type PreloaderProps = {
   onDone: () => void;
-  media: SiteMedia;
+  media: SiteMedia | null;
 };
 
 const PRELOADER_MIN_MS = 4000;
@@ -19,6 +20,8 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
   const [display, setDisplay] = useState("00");
 
   useEffect(() => {
+    if (!media) return;
+
     let cancelled = false;
     let rafId = 0;
     const start = performance.now();
@@ -67,7 +70,7 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
       transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
     >
       <div className="flex-1 flex items-center justify-center">
-        <MontisLogo iconSize={88} fillProgress={maskInset} logoSrc={media.logo} />
+        <MontisLogo iconSize={88} fillProgress={maskInset} logoSrc={media?.logo ?? defaultSiteMedia.logo} />
       </div>
       <div className="w-full flex items-end">
         <span className="font-sans not-italic text-6xl md:text-8xl text-montis-navy leading-none tabular-nums">

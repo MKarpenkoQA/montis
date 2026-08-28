@@ -25,7 +25,7 @@ import { scrollToSection } from "./lib/scrollToSection";
 export default function App() {
   const [lang, setLang] = useState<Language>("ru");
   const [loading, setLoading] = useState(true);
-  const { content } = useSiteContent();
+  const { content, loading: contentLoading } = useSiteContent();
 
   const t = content.translations[lang];
 
@@ -56,7 +56,13 @@ export default function App() {
       </a>
 
       <AnimatePresence>
-        {loading && <Preloader key="preloader" onDone={handlePreloaderDone} media={content.media} />}
+        {loading && (
+          <Preloader
+            key="preloader"
+            onDone={handlePreloaderDone}
+            media={contentLoading ? null : content.media}
+          />
+        )}
       </AnimatePresence>
 
       {!loading && (
