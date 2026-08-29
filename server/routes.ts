@@ -1,5 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
+import crypto from "node:crypto";
 import path from "node:path";
 import {
   ADMIN_PASSWORD,
@@ -22,7 +23,7 @@ const upload = multer({
         .basename(file.originalname, ext)
         .replace(/[^a-zA-Z0-9-_]+/g, "-")
         .slice(0, 48);
-      cb(null, `${base || "file"}-${Date.now()}${ext}`);
+      cb(null, `${base || "file"}-${Date.now()}-${crypto.randomUUID()}${ext}`);
     },
   }),
   limits: { fileSize: 25 * 1024 * 1024 },
