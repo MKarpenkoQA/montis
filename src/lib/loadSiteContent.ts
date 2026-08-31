@@ -1,12 +1,16 @@
 import type { SiteContent } from "../content/types";
-import { defaultSiteContent } from "../content/defaults";
 import { fetchSiteContent } from "./siteContentApi";
 
-/** Fetch site content from the API, falling back to bundled defaults. */
+const CONTENT_LOAD_TIMEOUT_MS = 10_000;
+
+/** Fetch live site content from the API, bounding hung requests so callers can retry. */
 export const loadSiteContent = async (): Promise<SiteContent> => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), CONTENT_LOAD_TIMEOUT_MS);
+
   try {
-    return await fetchSiteContent();
-  } catch {
-    return defaultSiteContent;
+    return await fetchSiteContent({ signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
   }
 };

@@ -5,8 +5,8 @@ const parseError = async (response: Response): Promise<string> => {
   return typeof body.error === "string" ? body.error : `Request failed: ${response.status}`;
 };
 
-export const fetchSiteContent = async (): Promise<SiteContent> => {
-  const response = await fetch("/api/content");
+export const fetchSiteContent = async (init?: RequestInit): Promise<SiteContent> => {
+  const response = await fetch("/api/content", init);
   if (!response.ok) {
     throw new Error(await parseError(response));
   }
