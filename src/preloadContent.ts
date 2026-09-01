@@ -1,5 +1,4 @@
 import { injectNearFoldHints } from "./mediaManifest";
-import { isDesktopViewport } from "./lib/networkAware";
 import { resolveMediaUrl } from "./lib/mediaUrl";
 import { getOptimalMediaUrl, normalizeMediaPath } from "./lib/responsiveMedia";
 import type { SiteMedia } from "./content/types";
@@ -115,7 +114,7 @@ const getHeroPosterUrl = (poster: string): string => {
 
 /**
  * Phase 1: critical above-the-fold assets for the preloader.
- * Mobile skips full hero video download to save bandwidth.
+ * Mobile also preloads the hero video so iOS has a blob source ready for autoplay.
  */
 export const preloadCriticalContent = async (
   media: SiteMedia,
@@ -130,14 +129,9 @@ export const preloadCriticalContent = async (
   await Promise.all([loadImage(logoUrl), loadImage(posterUrl)]);
   onProgress(8);
 
-  if (isDesktopViewport()) {
-    await loadHeroVideo(heroVideoUrl, (ratio) => {
-      onProgress(8 + ratio * 92);
-    });
-  } else {
-    onProgress(100);
-    return;
-  }
+  await loadHeroVideo(heroVideoUrl, (ratio) => {
+    onProgress(8 + ratio * 92);
+  });
 
   onProgress(100);
 };
