@@ -9,6 +9,7 @@ import { createServer as createViteServer } from "vite";
 import { assertSecureAdminPassword } from "./auth.js";
 import { createApiRouter } from "./routes.js";
 import { ensureUploadsDir } from "./contentStore.js";
+import { shouldServeSpaFallback } from "./spaFallback.js";
 
 assertSecureAdminPassword();
 
@@ -34,7 +35,7 @@ if (isProd) {
     res.sendFile(path.join(ROOT, "dist/admin.html"));
   });
   app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/media")) {
+    if (!shouldServeSpaFallback(req.path)) {
       next();
       return;
     }
@@ -54,7 +55,7 @@ if (isProd) {
 
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
-    if (url.startsWith("/api") || url.startsWith("/media")) {
+    if (!shouldServeSpaFallback(req.path)) {
       next();
       return;
     }
