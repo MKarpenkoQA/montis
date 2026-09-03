@@ -6,6 +6,43 @@ const LANGUAGES: Language[] = ["ru", "uz", "en"];
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+type UrlSettingKey = "mapEmbedUrl" | "mapExternalUrl" | "instagramUrl" | "telegramUrl";
+
+const OPTIONAL_URL_SETTINGS = new Set<UrlSettingKey>(["instagramUrl", "telegramUrl"]);
+
+const normalizeHttpUrlSetting = (
+  settings: Partial<SiteContent["settings"]>,
+  key: UrlSettingKey,
+): string => {
+  const rawValue = settings[key];
+
+  if (rawValue === undefined && OPTIONAL_URL_SETTINGS.has(key)) {
+    return "";
+  }
+
+  if (typeof rawValue !== "string") {
+    throw new Error(`Invalid URL setting: ${key}`);
+  }
+
+  const value = rawValue.trim();
+  if (value === "" && OPTIONAL_URL_SETTINGS.has(key)) {
+    return "";
+  }
+
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Invalid URL setting: ${key}`);
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`Invalid URL setting: ${key}`);
+  }
+
+  return value;
+};
+
 const mergeMedia = (value: unknown): SiteMedia => {
   if (!isRecord(value)) return defaultSiteMedia;
 
@@ -43,13 +80,17 @@ export const parseSiteContent = (value: unknown): SiteContent => {
     }
   }
 
+  const settings = value.settings as Partial<SiteContent["settings"]>;
+
   return {
     ...(value as SiteContent),
     media: mergeMedia(value.media),
     settings: {
-      instagramUrl: "",
-      telegramUrl: "",
-      ...(value.settings as SiteContent["settings"]),
+      ...(settings as SiteContent["settings"]),
+      mapEmbedUrl: normalizeHttpUrlSetting(settings, "mapEmbedUrl"),
+      mapExternalUrl: normalizeHttpUrlSetting(settings, "mapExternalUrl"),
+      instagramUrl: normalizeHttpUrlSetting(settings, "instagramUrl"),
+      telegramUrl: normalizeHttpUrlSetting(settings, "telegramUrl"),
     },
   };
 };
