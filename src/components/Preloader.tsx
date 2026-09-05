@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MontisLogo } from "./MontisLogo";
 import { preloadCriticalContent } from "../preloadContent";
 import type { SiteMedia } from "../content/types";
@@ -17,11 +17,18 @@ const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 export const Preloader = ({ onDone, media }: PreloaderProps) => {
   const progress = useMotionValue(0);
   const [display, setDisplay] = useState("00");
+  const startRef = useRef<number | null>(null);
+
+  // CMS media can arrive while the splash is visible; keep the minimum tied to the first mount.
+  if (startRef.current === null) {
+    startRef.current = performance.now();
+  }
 
   useEffect(() => {
     let cancelled = false;
     let rafId = 0;
-    const start = performance.now();
+    let minTimerId: number | undefined;
+    const start = startRef.current ?? performance.now();
 
     const tick = (now: number) => {
       if (cancelled) return;
@@ -41,7 +48,8 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
     void Promise.all([
       preloadCriticalContent(media, () => {}),
       new Promise<void>((resolve) => {
-        window.setTimeout(resolve, PRELOADER_MIN_MS);
+        const remaining = Math.max(0, PRELOADER_MIN_MS - (performance.now() - start));
+        minTimerId = window.setTimeout(resolve, remaining);
       }),
     ]).then(() => {
       if (cancelled) return;
@@ -54,6 +62,7 @@ export const Preloader = ({ onDone, media }: PreloaderProps) => {
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
+      if (minTimerId !== undefined) window.clearTimeout(minTimerId);
     };
   }, [media, onDone, progress]);
 
