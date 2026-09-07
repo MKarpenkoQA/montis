@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Language, SiteContent, SiteMedia } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
@@ -37,21 +37,39 @@ export const EditorPage = ({
   const [section, setSection] = useState<Section>("Hero");
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [lastSavedContent, setLastSavedContent] = useState(initialContent);
 
   const t = content.translations[lang];
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(content) !== JSON.stringify(lastSavedContent),
+    [content, lastSavedContent],
+  );
 
   const handleSave = async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setStatus(null);
     try {
       const saved = await saveContent(content);
       setContent(saved);
+      setLastSavedContent(saved);
       setStatus("Сохранено");
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Ошибка сохранения");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
+  };
+
+  const handleReload = () => {
+    if (savingRef.current) return;
+    if (hasUnsavedChanges && !window.confirm("Есть несохраненные изменения. Обновить контент и потерять их?")) {
+      return;
+    }
+    onReload();
   };
 
   const handleUpload = async (onApply: (url: string) => void, file: File) => {
@@ -269,7 +287,12 @@ export const EditorPage = ({
             <a href="/" target="_blank" rel="noreferrer" className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s hover:border-montis-navy">
               Сайт ↗
             </a>
-            <button type="button" onClick={() => void onReload()} className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s">
+            <button
+              type="button"
+              onClick={handleReload}
+              disabled={saving}
+              className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s disabled:opacity-60"
+            >
               Обновить
             </button>
             <button
