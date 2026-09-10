@@ -5,6 +5,7 @@ import { getOptimalMediaUrl, normalizeMediaPath } from "./lib/responsiveMedia";
 import type { SiteMedia } from "./content/types";
 
 let heroVideoBlobUrl: string | null = null;
+const CRITICAL_IMAGE_TIMEOUT_MS = 12_000;
 
 export type PreloadPhase = "idle" | "critical" | "ready";
 
@@ -14,8 +15,20 @@ export const getPreloadedHeroVideoSrc = (fallback: string): string => heroVideoB
 const loadImage = (src: string): Promise<void> =>
   new Promise((resolve) => {
     const image = new Image();
-    image.onload = () => resolve();
-    image.onerror = () => resolve();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      image.onload = null;
+      image.onerror = null;
+      resolve();
+    };
+
+    const timeout = window.setTimeout(finish, CRITICAL_IMAGE_TIMEOUT_MS);
+    image.onload = finish;
+    image.onerror = finish;
     image.src = src;
   });
 
