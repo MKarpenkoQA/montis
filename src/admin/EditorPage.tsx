@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Language, SiteContent, SiteMedia } from "../content/types";
 import { Field, ImageField } from "./fields";
 import { logout, saveContent, uploadFile } from "./api";
@@ -37,8 +37,22 @@ export const EditorPage = ({
   const [section, setSection] = useState<Section>("Hero");
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState(0);
 
   const t = content.translations[lang];
+  const uploading = pendingUploads > 0;
+
+  useEffect(() => {
+    if (!uploading) return;
+
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [uploading]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -55,9 +69,17 @@ export const EditorPage = ({
   };
 
   const handleUpload = async (onApply: (url: string) => void, file: File) => {
-    const { url } = await uploadFile(file);
-    onApply(url);
-    setStatus(`Файл загружен: ${url}`);
+    setPendingUploads((count) => count + 1);
+    setStatus("Загрузка файла...");
+    try {
+      const { url } = await uploadFile(file);
+      onApply(url);
+      setStatus(`Файл загружен: ${url}`);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Ошибка загрузки файла");
+    } finally {
+      setPendingUploads((count) => Math.max(0, count - 1));
+    }
   };
 
   const updateMedia = (mutate: (media: SiteMedia) => void) => {
@@ -269,13 +291,19 @@ export const EditorPage = ({
             <a href="/" target="_blank" rel="noreferrer" className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s hover:border-montis-navy">
               Сайт ↗
             </a>
-            <button type="button" onClick={() => void onReload()} className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s">
-              Обновить
+            <button
+              type="button"
+              onClick={() => void onReload()}
+              disabled={uploading}
+              className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s disabled:opacity-60"
+            >
+              {uploading ? "Загрузка..." : "Обновить"}
             </button>
             <button
               type="button"
               onClick={() => void logout().then(() => window.location.reload())}
-              className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s"
+              disabled={uploading}
+              className="rounded-full border border-montis-ink/15 px-4 py-2 eyebrow-s disabled:opacity-60"
             >
               Выйти
             </button>
