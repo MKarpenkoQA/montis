@@ -21,6 +21,11 @@ const DESKTOP_ADVANTAGE_POSITIONS = [
 
 const INTRO_FADE_END = 0.12;
 
+const getVideoMimeType = (src: string): "video/mp4" | "video/webm" => {
+  const path = src.split(/[?#]/, 1)[0].toLowerCase();
+  return path.endsWith(".webm") ? "video/webm" : "video/mp4";
+};
+
 type SecondScreenVideoProps = {
   t: TranslationBundle;
   media: SiteMedia;
@@ -212,7 +217,7 @@ export const SecondScreenVideo = ({ t, media }: SecondScreenVideoProps) => {
                 onCanPlayThrough={() => setVideoReady(true)}
                 onEnded={freezeOnLastFrame}
               >
-                <source src={videoSrc} type="video/mp4" />
+                <source src={videoSrc} type={getVideoMimeType(media.sourceVideo)} />
               </video>
               <div className="absolute -right-[10%] md:-right-[20%] top-[-10%] z-10 h-[70%] md:h-[85%] w-[60%] md:w-[55%] rounded-full bg-gradient-to-bl from-montis-blue/[0.07] via-transparent to-transparent blur-3xl" />
               <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_80%_50%_at_70%_0%,rgba(26,43,86,0.06),transparent)]" />
