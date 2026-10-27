@@ -33,7 +33,7 @@ if (isProd) {
   app.get(["/admin", "/admin/"], (_req, res) => {
     res.sendFile(path.join(ROOT, "dist/admin.html"));
   });
-  app.get("*", (req, res, next) => {
+  app.get(/.*/, (req, res, next) => {
     if (req.path.startsWith("/api") || req.path.startsWith("/media")) {
       next();
       return;
@@ -52,7 +52,7 @@ if (isProd) {
 
   app.use(vite.middlewares);
 
-  app.use("*", async (req, res, next) => {
+  app.use(async (req, res, next) => {
     const url = req.originalUrl;
     if (url.startsWith("/api") || url.startsWith("/media")) {
       next();
