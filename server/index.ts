@@ -18,6 +18,11 @@ const PORT = Number(process.env.PORT ?? 3000);
 const isProd = process.env.NODE_ENV === "production";
 
 const app = express();
+app.use((_req, res, next) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+  next();
+});
 app.use(cookieParser());
 app.use(express.json({ limit: "4mb" }));
 
