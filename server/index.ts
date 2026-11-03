@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import http from "node:http";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer as createViteServer } from "vite";
@@ -17,10 +17,24 @@ const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.PORT ?? 3000);
 const isProd = process.env.NODE_ENV === "production";
 
+const assertProductionBuild = async (): Promise<void> => {
+  if (!isProd) return;
+
+  const requiredFiles = ["dist/index.html", "dist/admin.html"];
+
+  try {
+    await Promise.all(requiredFiles.map((file) => access(path.join(ROOT, file))));
+  } catch {
+    console.error("FATAL: Production build artifacts are missing. Run npm run build before npm run start.");
+    process.exit(1);
+  }
+};
+
 const app = express();
 app.use(cookieParser());
 app.use(express.json({ limit: "4mb" }));
 
+await assertProductionBuild();
 await ensureUploadsDir();
 app.use("/media/uploads", express.static(path.join(ROOT, "public/media/uploads")));
 app.use("/media", express.static(path.join(ROOT, "public/media")));
